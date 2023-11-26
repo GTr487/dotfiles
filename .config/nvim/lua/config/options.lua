@@ -1,0 +1,19 @@
+local g = vim.g
+local opt = vim.opt
+
+opt.smartcase = true            -- smart case
+opt.smartindent = true          -- make identing smarter again
+opt.splitbelow = true           -- force horizontal split to go below 
+opt.splitright = true           -- force vertical split to go to the right
+opt.termguicolors = true        -- set term gui colors
+opt.undofile = true             -- enable persistent undo
+opt.expandtab = true            -- convert tabs to spaces
+opt.shiftwidth = 4              -- number of spaces inserted for each indentation
+opt.tabstop = 4                 -- insert n spaces for a tab
+opt.cursorline = true           -- highlight the cursor line
+opt.number = true               -- set numbered lines
+opt.relativenumber = true       -- set relative numbered lines
+opt.signcolumn = "yes"          -- show the sign column
+opt.wrap = false                -- display lines as one long line
+opt.colorcolumn = "90"           -- vertical rule at n
+opt.showmatch = true             -- highlight matching parentesis
