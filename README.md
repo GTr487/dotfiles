@@ -1,11 +1,11 @@
-# dottools.sh
+# dottools
 
-`dottools.sh` is a Bash script designed to set up a development environment on Linux by installing essential tools and managing custom configuration files (dotfiles).
+`dottools` is a Bash script designed to set up a development environment on Linux by installing essential tools and managing custom configuration files (dotfiles).
 
 ## Usage
 
 ```bash
-./dottools.sh [OPTIONS]
+./dottools [OPTIONS]
 ```
 
 ### Description
@@ -49,7 +49,7 @@ To run this script, the following tools must be installed:
 ### Example Execution
 
 ```bash
-sudo ./dottools.sh --setup
+sudo ./dottools --setup
 ```
 
 ### The `.include` File
