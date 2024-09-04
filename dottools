@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRIPT="dottools.sh"
+SCRIPT="dottools"
 VERSION="1.0.0"
 INCLUDE_FILE=".include"
 OUTPUT_DIR="dotfiles"
