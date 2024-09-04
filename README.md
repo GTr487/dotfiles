@@ -1,49 +1,87 @@
-# DOTFILES by GTr487
+# dottools.sh
 
-**DOTFILES by GTr487** is a project designed to automatically install and configure a development environment along with its dotfiles.
+`dottools.sh` is a Bash script designed to set up a development environment on Linux by installing essential tools and managing custom configuration files (dotfiles).
 
-## Installation and Configuration
-
-The project includes a script named `setup.sh` that automates the installation and configuration of the development environment. Below are the available options for running the script.
-
-### Script Usage
-
-#### Show Help
-
-To get information on how to use the script, you can run it with the `-h` or `--help` options:
+## Usage
 
 ```bash
-./setup.sh -h
+./dottools.sh [OPTIONS]
 ```
-or
+
+### Description
+
+This script installs key development tools like i3, Rofi, Polybar, Kitty, and Tmux, and manages dotfiles by copying them to and from specified locations.
+
+### Options
+
+- `-h, --help`  
+  Display this help message and exit.
+
+- `-s, --setup`  
+  Install and configure the base development environment.
+
+- `-i, --install`  
+  Install all required dependencies (i3, Rofi, Polybar, Kitty, Tmux).
+
+- `-g, --get`  
+  Retrieve dotfiles from the source paths specified in the `.include` file.
+
+- `-p, --put`  
+  Deploy dotfiles to the destination paths specified in the `.include` file.
+
+### Notes
+
+- You may need to run this script as a superuser (`sudo`).
+
+## Dependencies
+
+- `apt`: This script uses the `apt` package manager to install software.
+- `sudo`: Required for some installation operations.
+
+## Installation of Dependencies
+
+To run this script, the following tools must be installed:
+
+- `bash`
+- `sudo`
+- `apt`
+
+### Example Execution
+
 ```bash
-./setup.sh --help
+sudo ./dottools.sh --setup
 ```
 
-This will display the help and a description of the available options.
+### The `.include` File
 
-#### Install and Configure the Environment
+The `.include` file is a plain text file that specifies the configuration files (dotfiles) and their associated paths. This file is necessary for the script to know which files to copy and where to find or place them.
 
-To run the installation and configuration of the development environment, use the `-env` or `--environment` option:
+#### Format of the `.include` File
 
-```bash
-./setup.sh -env
-```
-or
-```bash
-./setup.sh --environment
-```
+Each line in the `.include` file should contain two fields separated by a space or tab:
 
-This command will perform the automated installation and configure the necessary dotfiles for your development environment.
+1. **File Name**: A label or name that identifies the file or group of files to be managed.
+2. **File Path**: The full or relative path to the configuration file on the filesystem.
 
-#### Default Execution
+#### Example of `.include`
 
-If no arguments are provided to the script, it will display the same message as the `help` option:
-
-```bash
-./setup.sh
+```plaintext
+bashrc    ~/.bashrc
+vimrc     ~/.vimrc
+i3config  ~/.config/i3/config
+kitty     ~/.config/kitty/*
+tmux      ~/.tmux.conf
 ```
 
-### Requirements
+- **`bashrc`**: The `.bashrc` file located in the user's home directory.
+- **`vimrc`**: The `.vimrc` file located in the user's home directory.
+- **`i3config`**: The i3 configuration file located at `~/.config/i3/config`.
+- **`kitty`**: All files in the `~/.config/kitty/` directory.
+- **`tmux`**: The Tmux configuration file located in the user's home directory.
 
-- **Bash**: Ensure you have a Bash-compatible environment to run the script.
+### Important Notes
+
+- Paths can include the `~` character to represent the user's home directory.
+- To specify multiple files within a directory, you can use a wildcard (`*`).
+- Make sure there are no extra spaces at the end of each line and that the names and paths are correct to avoid errors during script execution.
+

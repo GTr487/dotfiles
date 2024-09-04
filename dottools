@@ -1,7 +1,12 @@
 #!/bin/bash
 
-SCRIPT="setup.sh"
+SCRIPT="dottools.sh"
 VERSION="1.0.0"
+INCLUDE_FILE=".include"
+OUTPUT_DIR="dotfiles"
+
+declare -A unique_args
+declare -A file_entries
 
 show_header() {
   echo -e "                                                              \n @@@@@@@@  @@@@@@@  @@@@@@@        @@@    @@@@@@   @@@@@@@@  \n@@@@@@@@@  @@@@@@@  @@@@@@@@      @@@@   @@@@@@@@  @@@@@@@@  \n!@@          @@!    @@!  @@@     @@!@!   @@!  @@@       @@!  \n!@!          !@!    !@!  @!@    !@!!@!   !@!  @!@      !@!   \n!@! @!@!@    @!!    @!@!!@!    @!! @!!    !@!!@!      @!!    \n!!! !!@!!    !!!    !!@!@!    !!!  !@!    !!@!!!     !!!     \n:!!   !!:    !!:    !!: :!!   :!!:!:!!:  !!:  !!!   !!:      \n:!:   !::    :!:    :!:  !:!  !:::!!:::  :!:  !:!  :!:       \n ::: ::::     ::    ::   :::       :::   ::::: ::   ::       \n :: :: :      :      :   : :       :::    : :  :   : :       \n                                                              "
@@ -12,16 +17,25 @@ show_version() {
 }
 
 show_help() {
-  echo "Usage: $SCRIPT [OPTIONS] [ARGUMENTS]"
+  echo "Usage: $SCRIPT [OPTIONS]"
   echo
   echo "Description:"
-  echo "  This script is responsible for setting up the development environment."
+  echo "  $SCRIPT is a Bash script to set up a development environment by installing necessary tools"
+  echo "  and managing dotfiles."
   echo
   echo "Options:"
-  echo "  -h, --help            Show this help message and exit."
-  echo "  -env, --environment   Required argument to install and configure the base environment."
+  echo "  -h, --help            Display this help message and exit."
+  echo "  -s, --setup           Install and configure the base development environment."
+  echo "  -i, --install         Install all required dependencies (i3, Rofi, Polybar, Kitty, Tmux)."
+  echo "  -g, --get             Retrieve dotfiles from the source paths specified in the .include file."
+  echo "  -p, --put             Deploy dotfiles to the destination paths specified in the .include file."
   echo
-  echo "Note: You may need to run this script as a superuser."
+  echo "Examples:"
+  echo "  sudo ./$SCRIPT --setup     Install and configure the base environment."
+  echo "  ./$SCRIPT --get            Retrieve dotfiles and store them in the output directory."
+  echo
+  echo "Note:"
+  echo "  You may need to run this script with elevated privileges (sudo) to install certain packages."
   echo
   exit 0
 }
@@ -61,14 +75,6 @@ install_i3() {
   rm -f keyring.deb
   echo "# i3 - Installation complete, and temporary files have been removed."
 
-  mkdir -p ~/.config/i3
-  cp dotfiles/i3.conf ~/.config/i3/config
-  if [ $? -ne 0 ]; then
-	echo "Error: Failed to copy config files."
-	exit 1
-  fi
-  echo "# i3 - Configuration complete."
-
   echo
 }
 
@@ -81,14 +87,6 @@ install_rofi() {
 	exit 1
   fi
   echo "# Rofi - Installation complete."
-
-  mkdir -p ~/.config/rofi
-  cp dotfiles/rofi.conf ~/.config/rofi/config.rasi
-  if [ $? -ne 0 ]; then
-	echo "Error: Failed to copy config files."
-	exit 1
-  fi
-  echo "# Rofi - Configuration complete."
 
   echo
 }
@@ -103,14 +101,6 @@ install_polybar() {
   fi
   echo "# Polybar - Installation complete."
 
-  mkdir -p ~/.config/polybar
-  cp dotfiles/polybar.conf ~/.config/polybar/config
-  if [ $? -ne 0 ]; then
-	echo "Error: Failed to copy config files."
-	exit 1
-  fi
-  echo "# Polybar - Configuration complete."
-
   echo
 }
 
@@ -123,14 +113,6 @@ install_kitty() {
 	exit 1
   fi
   echo "# Kitty - Installation complete."
-
-  mkdir -p ~/.config/kitty
-  cp dotfiles/kitty.conf ~/.config/kitty/kitty.conf
-  if [ $? -ne 0 ]; then
-	echo "Error: Failed to copy config files."
-	exit 1
-  fi
-  echo "# Kitty - Configuration complete."
 
   echo
 }
@@ -147,18 +129,9 @@ install_tmux() {
 
   echo "# Tmux - Installation complete."
 
-  mkdir -p ~/.config/tmux
-  cp dotfiles/tmux.conf ~/.config/tmux/tmux.conf
-  if [ $? -ne 0 ]; then
-	echo "Error: Failed to copy config files."
-	exit 1
-  fi
-  echo "# Tmux - Configuration complete."
-
   echo
 }
-
-setup_environment() {
+install_dependencies() {
   echo "Installing dependencies:"
   install_i3
   install_rofi
@@ -167,7 +140,93 @@ setup_environment() {
   install_tmux
 }
 
+setup_environment() {
+  echo "= Setting up environment ="
+  install_dependencies
+  put_dotfiles
+}
 
+fill_unique_args() {
+  for arg in "$@"; do
+	unique_args["$arg"]=1
+  done
+}
+
+fill_file_entries() {
+  if [ ! -e "${INCLUDE_FILE}" ]; then
+	  echo "Warning: No $INCLUDE_FILE found."
+	  return 1
+  fi
+
+  while IFS=$'\t ' read -r name path; do
+	  file_entries["$name"]="$path"
+  done < "$INCLUDE_FILE"
+}
+
+get_dotfiles() {
+	echo "Getting dotfiles"
+	for clave in "${!file_entries[@]}"; do
+		from_path="${file_entries[$clave]}"
+		from_path_expanded="${from_path//\~/$HOME}"
+		to_path="${OUTPUT_DIR}/${clave}"
+
+		mkdir -p "${to_path}"
+
+		if [ -f "${from_path_expanded}" ]; then
+			cp "${from_path_expanded}" "${to_path}"
+			if [ $? -eq 0 ]; then 
+				echo "- Copied: ${clave}  <-  ${from_path_expanded}"
+			else
+				echo "- Error: Not copied: ${clave}  <-  ${from_path_expanded}"
+			fi
+		elif [[ "${from_path_expanded}" == *'*' ]]; then
+			shopt -s dotglob
+			files=($from_path_expanded)
+			shopt -u dotglob
+			
+			for file in "${files[@]}"; do
+				cp -r "${file}" "${to_path}"
+				if [ $? -eq 0 ]; then 
+					echo "- Copied: ${clave}  <-  ${file}"
+				else
+					echo "- Error: Not copied: ${clave}  <-  ${file}"
+				fi
+			done
+
+
+		else
+			echo "Warning: ${from_path} invalid."
+		fi
+	done
+	echo
+}
+
+put_dotfiles() {
+	echo "Putting dotfiles"
+	for clave in "${!file_entries[@]}"; do
+		from_path="${OUTPUT_DIR}/${clave}"
+		to_path="${file_entries[$clave]}"
+		to_path_expanded="${to_path//\~/$HOME}"
+		
+		mkdir -p $(dirname "$to_path_expanded")
+
+		shopt -s dotglob
+		files=($from_path)
+		shopt -u dotglob
+
+		for file in "${files[@]}"; do
+			cp -r "${file}" "$(dirname $(dirname $to_path_expanded))"
+
+			if [ $? -eq 0 ]; then 
+				echo "- Copied: ${clave}  ->  ${to_path_expanded}"
+			else
+				echo "- Error: Not copied: ${clave}  ->  ${to_path_expanded}"
+			fi
+		done
+
+	done
+	echo
+}
 
 ####################
 ####################
@@ -175,29 +234,34 @@ setup_environment() {
 if [ "$#" -eq 0 ]; then
 	show_help
 	exit 1
-else
-	show_header
-	echo
-	show_version
-	echo
-	echo
 fi
+
+show_header
+echo
+show_version
+echo
+echo
 	
-
-declare -A unique_args
-
-for arg in "$@"; do
-	unique_args["$arg"]=1
-done
-
+fill_unique_args "$@"
+fill_file_entries
 
 for arg in "${!unique_args[@]}"; do
 	case "$arg" in
 		-h|--help)
 			show_help
 			;;
-		-env|--environment)
+		-s|--setup)
 			setup_environment
+			;;
+		-i|--install)
+			install_dependencies
+			;;
+		-g|--get)
+			get_dotfiles
+			;;
+		-p|--put)
+			put_dotfiles
 			;;
 	esac
 done
+
