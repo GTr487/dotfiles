@@ -7,6 +7,7 @@ OUTPUT_DIR="dotfiles"
 
 declare -A unique_args
 declare -A file_entries
+declare -A tools_to_install
 
 show_header() {
   echo -e "                                                              \n @@@@@@@@  @@@@@@@  @@@@@@@        @@@    @@@@@@   @@@@@@@@  \n@@@@@@@@@  @@@@@@@  @@@@@@@@      @@@@   @@@@@@@@  @@@@@@@@  \n!@@          @@!    @@!  @@@     @@!@!   @@!  @@@       @@!  \n!@!          !@!    !@!  @!@    !@!!@!   !@!  @!@      !@!   \n!@! @!@!@    @!!    @!@!!@!    @!! @!!    !@!!@!      @!!    \n!!! !!@!!    !!!    !!@!@!    !!!  !@!    !!@!!!     !!!     \n:!!   !!:    !!:    !!: :!!   :!!:!:!!:  !!:  !!!   !!:      \n:!:   !::    :!:    :!:  !:!  !:::!!:::  :!:  !:!  :!:       \n ::: ::::     ::    ::   :::       :::   ::::: ::   ::       \n :: :: :      :      :   : :       :::    : :  :   : :       \n                                                              "
@@ -29,10 +30,12 @@ show_help() {
   echo "  -i, --install         Install all required dependencies (i3, Rofi, Polybar, Kitty, Tmux)."
   echo "  -g, --get             Retrieve dotfiles from the source paths specified in the .include file."
   echo "  -p, --put             Deploy dotfiles to the destination paths specified in the .include file."
+  echo "  --only=<tools>        Install only the specified tools (comma-separated list, e.g., tmux,i3,nvim)."
   echo
   echo "Examples:"
   echo "  sudo ./$SCRIPT --setup     Install and configure the base environment."
   echo "  ./$SCRIPT --get            Retrieve dotfiles and store them in the output directory."
+  echo "  ./$SCRIPT --only=tmux,i3   Install only tmux and i3."
   echo
   echo "Note:"
   echo "  You may need to run this script with elevated privileges (sudo) to install certain packages."
@@ -41,7 +44,15 @@ show_help() {
 }
 
 install_i3() {
+  if [ ${#tools_to_install[@]} -gt 0 ]; then
+	  if [ -z "${tools_to_install["i3"]}" ] || [ "${tools_to_install["i3"]}" -ne 1 ]; then
+		  return 0
+	  fi
+  fi
+
+  echo
   echo "# i3 --------------------------- #"
+  echo
   
   /usr/lib/apt/apt-helper download-file https://debian.sur5r.net/i3/pool/main/s/sur5r-keyring/sur5r-keyring_2024.03.04_all.deb keyring.deb SHA256:f9bb4340b5ce0ded29b7e014ee9ce788006e9bbfe31e96c09b2118ab91fca734
   if [ $? -ne 0 ]; then
@@ -73,52 +84,92 @@ install_i3() {
   fi
 
   rm -f keyring.deb
-  echo "# i3 - Installation complete, and temporary files have been removed."
 
+  echo
+  echo "# i3 - Installation complete, and temporary files have been removed."
+  echo "# ------------------------------ #"
   echo
 }
 
 install_rofi() {
+  if [ ${#tools_to_install[@]} -gt 0 ]; then
+	  if [ -z "${tools_to_install["rofi"]}" ] || [ "${tools_to_install["rofi"]}" -ne 1 ]; then
+		  return 0
+	  fi
+  fi
+
+  echo
   echo "# Rofi ------------------------- #"
+  echo
 
   sudo apt install -y rofi
   if [ $? -ne 0 ]; then
 	echo "Error: Failed to install Rofi."
 	exit 1
   fi
-  echo "# Rofi - Installation complete."
 
+  echo
+  echo "# Rofi - Installation complete."
+  echo "# ------------------------------ #"
   echo
 }
 
 install_polybar() {
+  if [ ${#tools_to_install[@]} -gt 0 ]; then
+	  if [ -z "${tools_to_install["polybar"]}" ] || [ "${tools_to_install["polybar"]}" -ne 1 ]; then
+		  return 0
+	  fi
+  fi
+
+  echo
   echo "# Polybar ---------------------- #"
+  echo
 
   sudo apt install -y polybar
   if [ $? -ne 0 ]; then
 	echo "Error: Failed to install Polybar."
 	exit 1
   fi
-  echo "# Polybar - Installation complete."
 
+  echo
+  echo "# Polybar - Installation complete."
+  echo "# ------------------------------ #"
   echo
 }
 
 install_kitty() {
+  if [ ${#tools_to_install[@]} -gt 0 ]; then
+	  if [ -z "${tools_to_install["kitty"]}" ] || [ "${tools_to_install["kitty"]}" -ne 1 ]; then
+		  return 0
+	  fi
+  fi
+
+  echo
   echo "# Kitty ------------------------ #"
+  echo
 
   sudo apt install -y kitty
   if [ $? -ne 0 ]; then
 	echo "Error: Failed to install Kitty."
 	exit 1
   fi
-  echo "# Kitty - Installation complete."
 
+  echo
+  echo "# Kitty - Installation complete."
+  echo "# ------------------------------ #"
   echo
 }
 
 install_tmux() {
+  if [ ${#tools_to_install[@]} -gt 0 ]; then
+	  if [ -z "${tools_to_install["tmux"]}" ] || [ "${tools_to_install["tmux"]}" -ne 1 ]; then
+		  return 0
+	  fi
+  fi
+
+  echo
   echo "# Tmux ------------------------- #"
+  echo
 
   sudo apt install -y tmux
   if [ $? -ne 0 ]; then
@@ -127,17 +178,74 @@ install_tmux() {
   fi
   echo "source-file ~/.config/tmux/tmux.conf" > ~/.tmux.conf
 
+  echo
   echo "# Tmux - Installation complete."
-
+  echo "# ------------------------------ #"
   echo
 }
+
+install_neovim() {
+  if [ ${#tools_to_install[@]} -gt 0 ]; then
+	  if [ -z "${tools_to_install["neovim"]}" ] || [ "${tools_to_install["neovim"]}" -ne 1 ]; then
+		  return 0
+	  fi
+  fi
+
+  echo
+  echo "# Neovim ----------------------- #"
+  echo
+
+  sudo apt install -y neovim
+  if [ $? -ne 0 ]; then
+	echo "Error: Failed to install Neovim."
+	exit 1
+  fi
+
+  echo
+  echo "# Neovim - Installation complete."
+  echo "# ------------------------------ #"
+  echo
+}
+
+install_timewarrior() {
+  if [ ${#tools_to_install[@]} -gt 0 ]; then
+	  if [ -z "${tools_to_install["timewarrior"]}" ] || [ "${tools_to_install["timewarrior"]}" -ne 1 ]; then
+		  return 0
+	  fi
+  fi
+
+  echo
+  echo "# Timewarrior ------------------ #"
+  echo
+
+  sudo apt install -y taskwarrior
+  if [ $? -ne 0 ]; then
+	echo "Error: Failed to install Taskwarrior."
+	exit 1
+  fi
+
+  sudo apt install -y timewarrior
+  if [ $? -ne 0 ]; then
+	echo "Error: Failed to install Timewarrior."
+	exit 1
+  fi
+
+  echo
+  echo "# Timewarrior - Installation complete."
+  echo "# ------------------------------ #"
+  echo
+}
+
 install_dependencies() {
   echo "Installing dependencies:"
+
   install_i3
   install_rofi
   install_polybar
   install_kitty 
   install_tmux
+  install_neovim
+  install_timewarrior
 }
 
 setup_environment() {
@@ -148,7 +256,15 @@ setup_environment() {
 
 fill_unique_args() {
   for arg in "$@"; do
-	unique_args["$arg"]=1
+	  if [[ "$arg" == *"--only"* ]]; then 
+		  tools="${arg#--only=}"
+		  IFS=',' read -r -a tool_array <<< "$tools"
+		  for tool in "${tool_array[@]}"; do
+			  tools_to_install["$tool"]=1
+		  done
+	  else
+		unique_args["$arg"]=1
+	  fi
   done
 }
 
@@ -169,6 +285,10 @@ get_dotfiles() {
 		from_path="${file_entries[$clave]}"
 		from_path_expanded="${from_path//\~/$HOME}"
 		to_path="${OUTPUT_DIR}/${clave}"
+
+		if [[ "$clave" =~ ^# ]]; then
+			continue
+		fi
 
 		mkdir -p "${to_path}"
 
@@ -207,6 +327,10 @@ put_dotfiles() {
 		from_path="${OUTPUT_DIR}/${clave}"
 		to_path="${file_entries[$clave]}"
 		to_path_expanded="${to_path//\~/$HOME}"
+
+		if [[ "$clave" =~ ^# ]]; then
+			continue
+		fi
 		
 		mkdir -p $(dirname "$to_path_expanded")
 

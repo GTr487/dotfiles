@@ -4,3 +4,5 @@ kitty		~/.config/kitty/kitty.conf
 polybar		~/.config/polybar/config
 rofi		~/.config/rofi/config.rasi
 tmux		~/.config/tmux/*
+#nvim		~/.config/nvim/*
+timewarrior	~/.taskrc
