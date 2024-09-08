@@ -10,354 +10,466 @@ declare -A file_entries
 declare -A tools_to_install
 
 show_header() {
-  echo -e "                                                              \n @@@@@@@@  @@@@@@@  @@@@@@@        @@@    @@@@@@   @@@@@@@@  \n@@@@@@@@@  @@@@@@@  @@@@@@@@      @@@@   @@@@@@@@  @@@@@@@@  \n!@@          @@!    @@!  @@@     @@!@!   @@!  @@@       @@!  \n!@!          !@!    !@!  @!@    !@!!@!   !@!  @!@      !@!   \n!@! @!@!@    @!!    @!@!!@!    @!! @!!    !@!!@!      @!!    \n!!! !!@!!    !!!    !!@!@!    !!!  !@!    !!@!!!     !!!     \n:!!   !!:    !!:    !!: :!!   :!!:!:!!:  !!:  !!!   !!:      \n:!:   !::    :!:    :!:  !:!  !:::!!:::  :!:  !:!  :!:       \n ::: ::::     ::    ::   :::       :::   ::::: ::   ::       \n :: :: :      :      :   : :       :::    : :  :   : :       \n                                                              "
+    echo -e "                                                              \n @@@@@@@@  @@@@@@@  @@@@@@@        @@@    @@@@@@   @@@@@@@@  \n@@@@@@@@@  @@@@@@@  @@@@@@@@      @@@@   @@@@@@@@  @@@@@@@@  \n!@@          @@!    @@!  @@@     @@!@!   @@!  @@@       @@!  \n!@!          !@!    !@!  @!@    !@!!@!   !@!  @!@      !@!   \n!@! @!@!@    @!!    @!@!!@!    @!! @!!    !@!!@!      @!!    \n!!! !!@!!    !!!    !!@!@!    !!!  !@!    !!@!!!     !!!     \n:!!   !!:    !!:    !!: :!!   :!!:!:!!:  !!:  !!!   !!:      \n:!:   !::    :!:    :!:  !:!  !:::!!:::  :!:  !:!  :!:       \n ::: ::::     ::    ::   :::       :::   ::::: ::   ::       \n :: :: :      :      :   : :       :::    : :  :   : :       \n                                                              "
 }
 
 show_version() {
-  echo -e "--------------------------------------------------------\n                                                  v$VERSION\n--------------------------------------------------------"
+    echo -e "--------------------------------------------------------\n                                                  v$VERSION\n--------------------------------------------------------"
 }
 
 show_help() {
-  echo "Usage: $SCRIPT [OPTIONS]"
-  echo
-  echo "Description:"
-  echo "  $SCRIPT is a Bash script to set up a development environment by installing necessary tools"
-  echo "  and managing dotfiles."
-  echo
-  echo "Options:"
-  echo "  -h, --help            Display this help message and exit."
-  echo "  -s, --setup           Install and configure the base development environment."
-  echo "  -i, --install         Install all required dependencies (i3, Rofi, Polybar, Kitty, Tmux)."
-  echo "  -g, --get             Retrieve dotfiles from the source paths specified in the .include file."
-  echo "  -p, --put             Deploy dotfiles to the destination paths specified in the .include file."
-  echo "  --only=<tools>        Install only the specified tools (comma-separated list, e.g., tmux,i3,nvim)."
-  echo
-  echo "Examples:"
-  echo "  sudo ./$SCRIPT --setup     Install and configure the base environment."
-  echo "  ./$SCRIPT --get            Retrieve dotfiles and store them in the output directory."
-  echo "  ./$SCRIPT --only=tmux,i3   Install only tmux and i3."
-  echo
-  echo "Note:"
-  echo "  You may need to run this script with elevated privileges (sudo) to install certain packages."
-  echo
-  exit 0
+    echo "Usage: $SCRIPT [OPTIONS]"
+    echo
+    echo "Description:"
+    echo "  $SCRIPT is a Bash script to set up a development environment by installing necessary tools"
+    echo "  and managing dotfiles."
+    echo
+    echo "Options:"
+    echo "  -h, --help            Display this help message and exit."
+    echo "  -s, --setup           Install and configure the base development environment."
+    echo "  -i, --install         Install all required dependencies (i3, Rofi, Polybar, Kitty, Tmux)."
+    echo "  -g, --get             Retrieve dotfiles from the source paths specified in the .include file."
+    echo "  -p, --put             Deploy dotfiles to the destination paths specified in the .include file."
+    echo "  --only=<tools>        Install only the specified tools (comma-separated list, e.g., tmux,i3,nvim)."
+    echo
+    echo "Examples:"
+    echo "  sudo ./$SCRIPT --setup     Install and configure the base environment."
+    echo "  ./$SCRIPT --get            Retrieve dotfiles and store them in the output directory."
+    echo "  ./$SCRIPT --only=tmux,i3   Install only tmux and i3."
+    echo
+    echo "Note:"
+    echo "  You may need to run this script with elevated privileges (sudo) to install certain packages."
+    echo
+    exit 0
+}
+
+install_basics() {
+    if [ ${#tools_to_install[@]} -gt 0 ]; then
+        if [ -z "${tools_to_install["basics"]}" ] || [ "${tools_to_install["basics"]}" -ne 1 ]; then
+            return 0
+        fi
+    fi
+
+    echo
+    echo "# basics ----------------------- #"
+    echo
+
+    sudo apt install -y curl
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to install curl."
+        exit 1
+    fi
+
+    sudo apt install -y xclip
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to install xclip."
+        exit 1
+    fi
+
+    sudo apt-get install -y ripgrep
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to install ripgrep."
+        exit 1
+    fi
+
+    echo
+    echo "# basics - Installation complete."
+    echo "# ------------------------------ #"
+    echo
+}
+
+install_asdf() {
+    if [ ${#tools_to_install[@]} -gt 0 ]; then
+        if [ -z "${tools_to_install["asdf"]}" ] || [ "${tools_to_install["asdf"]}" -ne 1 ]; then
+            return 0
+        fi
+    fi
+
+    echo
+    echo "# asdf ------------------------- #"
+    echo
+
+    git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.11.3
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to download asdf."
+        exit 1
+    fi
+
+    echo
+    echo "# asdf - Installation complete."
+    echo "# ------------------------------ #"
+    echo
+}
+
+install_asdf_plugins() {
+    if [ ${#tools_to_install[@]} -gt 0 ]; then
+        if [ -z "${tools_to_install["asdf_plugins"]}" ] || [ "${tools_to_install["asdf_plugins"]}" -ne 1 ]; then
+            return 0
+        fi
+    fi
+
+    echo
+    echo "# asdf_plugins ----------------- #"
+    echo
+
+    # NODE
+    asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to add plugin asdf-nodejs."
+    fi
+    asdf install nodejs 22.8.0
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to install nodejs latest."
+    fi
+    asdf global nodejs 22.8.0
+    echo "# asdf_plugins - Nodejs 22.8.0 - Setted."
+
+    # JAVA
+    asdf plugin-add java
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to add plugin asdf-java."
+    fi
+    asdf install java openjdk-11.0.2
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to install java 11."
+    fi
+    asdf global java openjdk-11.0.2
+    echo "# asdf_plugins - Openjdk 11.0.2 - Setted."
+
+
+    echo
+    echo "# asdf_plugins - Installation complete."
+    echo "# ------------------------------ #"
+    echo
 }
 
 install_i3() {
-  if [ ${#tools_to_install[@]} -gt 0 ]; then
-	  if [ -z "${tools_to_install["i3"]}" ] || [ "${tools_to_install["i3"]}" -ne 1 ]; then
-		  return 0
-	  fi
-  fi
+    if [ ${#tools_to_install[@]} -gt 0 ]; then
+        if [ -z "${tools_to_install["i3"]}" ] || [ "${tools_to_install["i3"]}" -ne 1 ]; then
+            return 0
+        fi
+    fi
 
-  echo
-  echo "# i3 --------------------------- #"
-  echo
-  
-  /usr/lib/apt/apt-helper download-file https://debian.sur5r.net/i3/pool/main/s/sur5r-keyring/sur5r-keyring_2024.03.04_all.deb keyring.deb SHA256:f9bb4340b5ce0ded29b7e014ee9ce788006e9bbfe31e96c09b2118ab91fca734
-  if [ $? -ne 0 ]; then
-	  echo "Error: Failed to download keyring file."
-	  exit 1
-  fi
+    echo
+    echo "# i3 --------------------------- #"
+    echo
 
-  sudo apt install -y ./keyring.deb
-  if [ $? -ne 0 ]; then
-	echo "Error: Failed to install keyring package."
-	rm -f keyring.deb
-	exit 1
-  fi
+    /usr/lib/apt/apt-helper download-file https://debian.sur5r.net/i3/pool/main/s/sur5r-keyring/sur5r-keyring_2024.03.04_all.deb keyring.deb SHA256:f9bb4340b5ce0ded29b7e014ee9ce788006e9bbfe31e96c09b2118ab91fca734
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to download keyring file."
+        exit 1
+    fi
 
-  echo "deb http://debian.sur5r.net/i3/ $(grep '^DISTRIB_CODENAME=' /etc/lsb-release | cut -f2 -d=) universe" | sudo tee /etc/apt/sources.list.d/sur5r-i3.list
+    sudo apt install -y ./keyring.deb
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to install keyring package."
+        rm -f keyring.deb
+        exit 1
+    fi
 
-  sudo apt update
-  if [ $? -ne 0 ]; then
-	echo "Error: Failed to update the package index."
-	rm -f keyring.deb
-	exit 1
-  fi
+    echo "deb http://debian.sur5r.net/i3/ $(grep '^DISTRIB_CODENAME=' /etc/lsb-release | cut -f2 -d=) universe" | sudo tee /etc/apt/sources.list.d/sur5r-i3.list
 
-  sudo apt install -y i3
-  if [ $? -ne 0 ]; then
-	echo "Error: Failed to install i3."
-	rm -f keyring.deb
-	exit 1
-  fi
+    sudo apt update
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to update the package index."
+        rm -f keyring.deb
+        exit 1
+    fi
 
-  rm -f keyring.deb
+    sudo apt install -y i3
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to install i3."
+        rm -f keyring.deb
+        exit 1
+    fi
 
-  echo
-  echo "# i3 - Installation complete, and temporary files have been removed."
-  echo "# ------------------------------ #"
-  echo
+    rm -f keyring.deb
+
+    echo
+    echo "# i3 - Installation complete, and temporary files have been removed."
+    echo "# ------------------------------ #"
+    echo
 }
 
 install_rofi() {
-  if [ ${#tools_to_install[@]} -gt 0 ]; then
-	  if [ -z "${tools_to_install["rofi"]}" ] || [ "${tools_to_install["rofi"]}" -ne 1 ]; then
-		  return 0
-	  fi
-  fi
+    if [ ${#tools_to_install[@]} -gt 0 ]; then
+        if [ -z "${tools_to_install["rofi"]}" ] || [ "${tools_to_install["rofi"]}" -ne 1 ]; then
+            return 0
+        fi
+    fi
 
-  echo
-  echo "# Rofi ------------------------- #"
-  echo
+    echo
+    echo "# Rofi ------------------------- #"
+    echo
 
-  sudo apt install -y rofi
-  if [ $? -ne 0 ]; then
-	echo "Error: Failed to install Rofi."
-	exit 1
-  fi
+    sudo apt install -y rofi
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to install Rofi."
+        exit 1
+    fi
 
-  echo
-  echo "# Rofi - Installation complete."
-  echo "# ------------------------------ #"
-  echo
+    echo
+    echo "# Rofi - Installation complete."
+    echo "# ------------------------------ #"
+    echo
 }
 
 install_polybar() {
-  if [ ${#tools_to_install[@]} -gt 0 ]; then
-	  if [ -z "${tools_to_install["polybar"]}" ] || [ "${tools_to_install["polybar"]}" -ne 1 ]; then
-		  return 0
-	  fi
-  fi
+    if [ ${#tools_to_install[@]} -gt 0 ]; then
+        if [ -z "${tools_to_install["polybar"]}" ] || [ "${tools_to_install["polybar"]}" -ne 1 ]; then
+            return 0
+        fi
+    fi
 
-  echo
-  echo "# Polybar ---------------------- #"
-  echo
+    echo
+    echo "# Polybar ---------------------- #"
+    echo
 
-  sudo apt install -y polybar
-  if [ $? -ne 0 ]; then
-	echo "Error: Failed to install Polybar."
-	exit 1
-  fi
+    sudo apt install -y polybar
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to install Polybar."
+        exit 1
+    fi
 
-  echo
-  echo "# Polybar - Installation complete."
-  echo "# ------------------------------ #"
-  echo
+    echo
+    echo "# Polybar - Installation complete."
+    echo "# ------------------------------ #"
+    echo
 }
 
 install_kitty() {
-  if [ ${#tools_to_install[@]} -gt 0 ]; then
-	  if [ -z "${tools_to_install["kitty"]}" ] || [ "${tools_to_install["kitty"]}" -ne 1 ]; then
-		  return 0
-	  fi
-  fi
+    if [ ${#tools_to_install[@]} -gt 0 ]; then
+        if [ -z "${tools_to_install["kitty"]}" ] || [ "${tools_to_install["kitty"]}" -ne 1 ]; then
+            return 0
+        fi
+    fi
 
-  echo
-  echo "# Kitty ------------------------ #"
-  echo
+    echo
+    echo "# Kitty ------------------------ #"
+    echo
 
-  sudo apt install -y kitty
-  if [ $? -ne 0 ]; then
-	echo "Error: Failed to install Kitty."
-	exit 1
-  fi
+    sudo apt install -y kitty
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to install Kitty."
+        exit 1
+    fi
 
-  echo
-  echo "# Kitty - Installation complete."
-  echo "# ------------------------------ #"
-  echo
+    echo
+    echo "# Kitty - Installation complete."
+    echo "# ------------------------------ #"
+    echo
 }
 
 install_tmux() {
-  if [ ${#tools_to_install[@]} -gt 0 ]; then
-	  if [ -z "${tools_to_install["tmux"]}" ] || [ "${tools_to_install["tmux"]}" -ne 1 ]; then
-		  return 0
-	  fi
-  fi
+    if [ ${#tools_to_install[@]} -gt 0 ]; then
+        if [ -z "${tools_to_install["tmux"]}" ] || [ "${tools_to_install["tmux"]}" -ne 1 ]; then
+            return 0
+        fi
+    fi
 
-  echo
-  echo "# Tmux ------------------------- #"
-  echo
+    echo
+    echo "# Tmux ------------------------- #"
+    echo
 
-  sudo apt install -y tmux
-  if [ $? -ne 0 ]; then
-	echo "Error: Failed to install Tmux."
-	exit 1
-  fi
-  echo "source-file ~/.config/tmux/tmux.conf" > ~/.tmux.conf
+    sudo apt install -y tmux
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to install Tmux."
+        exit 1
+    fi
+    echo "source-file ~/.config/tmux/tmux.conf" > ~/.tmux.conf
 
-  echo
-  echo "# Tmux - Installation complete."
-  echo "# ------------------------------ #"
-  echo
+    echo
+    echo "# Tmux - Installation complete."
+    echo "# ------------------------------ #"
+    echo
 }
 
 install_neovim() {
-  if [ ${#tools_to_install[@]} -gt 0 ]; then
-	  if [ -z "${tools_to_install["neovim"]}" ] || [ "${tools_to_install["neovim"]}" -ne 1 ]; then
-		  return 0
-	  fi
-  fi
+    if [ ${#tools_to_install[@]} -gt 0 ]; then
+        if [ -z "${tools_to_install["neovim"]}" ] || [ "${tools_to_install["neovim"]}" -ne 1 ]; then
+            return 0
+        fi
+    fi
 
-  echo
-  echo "# Neovim ----------------------- #"
-  echo
+    echo
+    echo "# Neovim ----------------------- #"
+    echo
 
-  sudo apt install -y neovim
-  if [ $? -ne 0 ]; then
-	echo "Error: Failed to install Neovim."
-	exit 1
-  fi
+    curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux64.tar.gz
+    if [ $? -ne 0 ]; then
+        echo "Error: Downloading file from neovim releases repository."
+        exit 1
+    fi
 
-  echo
-  echo "# Neovim - Installation complete."
-  echo "# ------------------------------ #"
-  echo
+    sudo rm -rf /opt/nvim
+    sudo tar -C /opt -xzf nvim-linux64.tar.gz
+    if [ $? -ne 0 ]; then
+        echo "Error: Extracting file nvim-linux64.tar.gz."
+        exit 1
+    fi
+
+    sudo rm -f nvim-linux64.tar.gz
+
+    echo
+    echo "# Neovim - Installation complete, and temporary files have been removed."
+    echo "# ------------------------------ #"
+    echo
 }
 
 install_timewarrior() {
-  if [ ${#tools_to_install[@]} -gt 0 ]; then
-	  if [ -z "${tools_to_install["timewarrior"]}" ] || [ "${tools_to_install["timewarrior"]}" -ne 1 ]; then
-		  return 0
-	  fi
-  fi
+    if [ ${#tools_to_install[@]} -gt 0 ]; then
+        if [ -z "${tools_to_install["timewarrior"]}" ] || [ "${tools_to_install["timewarrior"]}" -ne 1 ]; then
+            return 0
+        fi
+    fi
 
-  echo
-  echo "# Timewarrior ------------------ #"
-  echo
+    echo
+    echo "# Timewarrior ------------------ #"
+    echo
 
-  sudo apt install -y taskwarrior
-  if [ $? -ne 0 ]; then
-	echo "Error: Failed to install Taskwarrior."
-	exit 1
-  fi
+    sudo apt install -y taskwarrior
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to install Taskwarrior."
+        exit 1
+    fi
 
-  sudo apt install -y timewarrior
-  if [ $? -ne 0 ]; then
-	echo "Error: Failed to install Timewarrior."
-	exit 1
-  fi
+    sudo apt install -y timewarrior
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to install Timewarrior."
+        exit 1
+    fi
 
-  echo
-  echo "# Timewarrior - Installation complete."
-  echo "# ------------------------------ #"
-  echo
+    echo
+    echo "# Timewarrior - Installation complete."
+    echo "# ------------------------------ #"
+    echo
 }
 
 install_dependencies() {
-  echo "Installing dependencies:"
+    echo "Installing dependencies:"
 
-  install_i3
-  install_rofi
-  install_polybar
-  install_kitty 
-  install_tmux
-  install_neovim
-  install_timewarrior
+    install_basics
+    install_asdf
+    install_asdf_plugins
+    install_i3
+    install_rofi
+    install_polybar
+    install_kitty 
+    install_tmux
+    install_neovim
+    install_timewarrior
 }
 
 setup_environment() {
-  echo "= Setting up environment ="
-  install_dependencies
-  put_dotfiles
+    echo "= Setting up environment ="
+    install_dependencies
+    put_dotfiles
 }
 
 fill_unique_args() {
-  for arg in "$@"; do
-	  if [[ "$arg" == *"--only"* ]]; then 
-		  tools="${arg#--only=}"
-		  IFS=',' read -r -a tool_array <<< "$tools"
-		  for tool in "${tool_array[@]}"; do
-			  tools_to_install["$tool"]=1
-		  done
-	  else
-		unique_args["$arg"]=1
-	  fi
-  done
+    for arg in "$@"; do
+        if [[ "$arg" == *"--only"* ]]; then 
+            tools="${arg#--only=}"
+            IFS=',' read -r -a tool_array <<< "$tools"
+            for tool in "${tool_array[@]}"; do
+                tools_to_install["$tool"]=1
+            done
+        else
+            unique_args["$arg"]=1
+        fi
+    done
 }
 
 fill_file_entries() {
-  if [ ! -e "${INCLUDE_FILE}" ]; then
-	  echo "Warning: No $INCLUDE_FILE found."
-	  return 1
-  fi
+    if [ ! -e "${INCLUDE_FILE}" ]; then
+        echo "Warning: No $INCLUDE_FILE found."
+        return 1
+    fi
 
-  while IFS=$'\t ' read -r name path; do
-	  file_entries["$name"]="$path"
-  done < "$INCLUDE_FILE"
+    while IFS=$'\t ' read -r name path; do
+        file_entries["$name"]="$path"
+    done < "$INCLUDE_FILE"
 }
 
 get_dotfiles() {
-	echo "Getting dotfiles"
-	for clave in "${!file_entries[@]}"; do
-		from_path="${file_entries[$clave]}"
-		from_path_expanded="${from_path//\~/$HOME}"
-		to_path="${OUTPUT_DIR}/${clave}"
+    echo "Getting dotfiles"
+    for clave in "${!file_entries[@]}"; do
+        from_path="${file_entries[$clave]}"
+        from_path_expanded="${from_path//\~/$HOME}"
+        to_path="${OUTPUT_DIR}/${clave}"
 
-		if [[ "$clave" =~ ^# ]]; then
-			continue
-		fi
+        if [[ "$clave" =~ ^# ]]; then
+            continue
+        fi
 
-		mkdir -p "${to_path}"
+        mkdir -p "${to_path}"
 
-		if [ -f "${from_path_expanded}" ]; then
-			cp "${from_path_expanded}" "${to_path}"
-			if [ $? -eq 0 ]; then 
-				echo "- Copied: ${clave}  <-  ${from_path_expanded}"
-			else
-				echo "- Error: Not copied: ${clave}  <-  ${from_path_expanded}"
-			fi
-		elif [[ "${from_path_expanded}" == *'*' ]]; then
-			shopt -s dotglob
-			files=($from_path_expanded)
-			shopt -u dotglob
-			
-			for file in "${files[@]}"; do
-				cp -r "${file}" "${to_path}"
-				if [ $? -eq 0 ]; then 
-					echo "- Copied: ${clave}  <-  ${file}"
-				else
-					echo "- Error: Not copied: ${clave}  <-  ${file}"
-				fi
-			done
+        if [ -f "${from_path_expanded}" ]; then
+            cp "${from_path_expanded}" "${to_path}"
+            if [ $? -eq 0 ]; then 
+                echo "- Copied: ${clave}  <-  ${from_path_expanded}"
+            else
+                echo "- Error: Not copied: ${clave}  <-  ${from_path_expanded}"
+            fi
+        elif [[ "${from_path_expanded}" == *'*' ]]; then
+            shopt -s dotglob
+            files=($from_path_expanded)
+            shopt -u dotglob
+
+            for file in "${files[@]}"; do
+                cp -r "${file}" "${to_path}"
+                if [ $? -eq 0 ]; then 
+                    echo "- Copied: ${clave}  <-  ${file}"
+                else
+                    echo "- Error: Not copied: ${clave}  <-  ${file}"
+                fi
+            done
 
 
-		else
-			echo "Warning: ${from_path} invalid."
-		fi
-	done
-	echo
+        else
+            echo "Warning: ${from_path} invalid."
+        fi
+    done
+    echo
 }
 
 put_dotfiles() {
-	echo "Putting dotfiles"
-	for clave in "${!file_entries[@]}"; do
-		from_path="${OUTPUT_DIR}/${clave}"
-		to_path="${file_entries[$clave]}"
-		to_path_expanded="${to_path//\~/$HOME}"
+    echo "Putting dotfiles"
+    for clave in "${!file_entries[@]}"; do
+        from_path="${OUTPUT_DIR}/${clave}"
+        to_path="${file_entries[$clave]}"
+        to_path_expanded="${to_path//\~/$HOME}"
 
-		if [[ "$clave" =~ ^# ]]; then
-			continue
-		fi
-		
-		mkdir -p $(dirname "$to_path_expanded")
+        if [[ "$clave" =~ ^# ]]; then
+            continue
+        fi
 
-		shopt -s dotglob
-		files=($from_path)
-		shopt -u dotglob
+        mkdir -p $(dirname "$to_path_expanded")
 
-		for file in "${files[@]}"; do
-			cp -r "${file}" "$(dirname $(dirname $to_path_expanded))"
+        shopt -s dotglob
+        files=($from_path)
+        shopt -u dotglob
 
-			if [ $? -eq 0 ]; then 
-				echo "- Copied: ${clave}  ->  ${to_path_expanded}"
-			else
-				echo "- Error: Not copied: ${clave}  ->  ${to_path_expanded}"
-			fi
-		done
+        for file in "${files[@]}"; do
+            cp -r "${file}" "$(dirname $(dirname $to_path_expanded))"
 
-	done
-	echo
+            if [ $? -eq 0 ]; then 
+                echo "- Copied: ${clave}  ->  ${to_path_expanded}"
+            else
+                echo "- Error: Not copied: ${clave}  ->  ${to_path_expanded}"
+            fi
+        done
+
+    done
+    echo
 }
 
 ####################
 ####################
 
 if [ "$#" -eq 0 ]; then
-	show_help
-	exit 1
+    show_help
+    exit 1
 fi
 
 show_header
@@ -365,27 +477,27 @@ echo
 show_version
 echo
 echo
-	
+
 fill_unique_args "$@"
 fill_file_entries
 
 for arg in "${!unique_args[@]}"; do
-	case "$arg" in
-		-h|--help)
-			show_help
-			;;
-		-s|--setup)
-			setup_environment
-			;;
-		-i|--install)
-			install_dependencies
-			;;
-		-g|--get)
-			get_dotfiles
-			;;
-		-p|--put)
-			put_dotfiles
-			;;
-	esac
+    case "$arg" in
+        -h|--help)
+            show_help
+            ;;
+        -s|--setup)
+            setup_environment
+            ;;
+        -i|--install)
+            install_dependencies
+            ;;
+        -g|--get)
+            get_dotfiles
+            ;;
+        -p|--put)
+            put_dotfiles
+            ;;
+    esac
 done
 

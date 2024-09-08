@@ -118,3 +118,10 @@ if ! shopt -oq posix; then
 fi
 
 export TERM=xterm-256color
+
+. "$HOME/.asdf/asdf.sh"
+. "$HOME/.asdf/completions/asdf.bash"
+
+export PATH="$PATH:/opt/nvim-linux64/bin"
+
+
