@@ -45,42 +45,49 @@
     - name: Install ASDF
       git:
         repo: 'https://github.com/asdf-vm/asdf.git'
-        dest: '$HOME/.asdf'
+        dest: '{{ ansible_env.HOME }}/.asdf'
         version: 'v0.11.3'
         clone: yes
       when: "'asdf' in tools_to_install"
 
-    - name: Set PATH for ASDF
-      environment:
-        PATH: "~/.asdf/bin:~/.asdf/shims:{{ ansible_env.PATH }}"
+    - name: Ensure ASDF is in PATH
+      lineinfile:
+        path: ~/.profile
+        line: 'export PATH="$HOME/.asdf/bin:$HOME/.asdf/shims:$PATH"'
+        state: present
+      when: "'asdf' in tools_to_install"
+      
+    - name: Reload profile
+      shell: source ~/.profile
+      when: "'asdf' in tools_to_install"
 
     - name: Install ASDF plugins
       block:
         - name: Add ASDF Node.js plugin
-          command: asdf plugin-add nodejs https://github.com/asdf-vm/asdf-nodejs.git
+          command: ~/.asdf/bin/asdf plugin-add nodejs https://github.com/asdf-vm/asdf-nodejs.git
           args:
-            creates: ~/.asdf/plugins/nodejs
+            creates: "{{ ansible_env.HOME }}/.asdf/plugins/nodejs"
 
         - name: Install Node.js with ASDF
-          command: asdf install nodejs 22.8.0
+          command: ~/.asdf/bin/asdf install nodejs 22.8.0
           args:
-            creates: ~/.asdf/installs/nodejs/22.8.0
+            creates: "{{ ansible_env.HOME }}/.asdf/installs/nodejs/22.8.0"
 
         - name: Set Node.js version globally
-          command: asdf global nodejs 22.8.0
+          command: ~/.asdf/bin/asdf global nodejs 22.8.0
 
         - name: Add ASDF Java plugin
-          command: asdf plugin-add java
+          command: ~/.asdf/bin/asdf plugin-add java
           args:
-            creates: ~/.asdf/plugins/java
+            creates: "{{ ansible_env.HOME }}/.asdf/plugins/java"
 
         - name: Install Java 11 with ASDF
-          command: asdf install java openjdk-11.0.2
+          command: ~/.asdf/bin/asdf install java openjdk-11.0.2
           args:
-            creates: ~/.asdf/installs/java/openjdk-11.0.2
+            creates: "{{ ansible_env.HOME }}/.asdf/installs/java/openjdk-11.0.2"
 
         - name: Set Java version globally
-          command: asdf global java openjdk-11.0.2
+          command: ~/.asdf/bin/asdf global java openjdk-11.0.2
       when: "'asdf_plugins' in tools_to_install"
 
     - name: Install Zsh
@@ -176,8 +183,4 @@
         - { src: "{{ playbook_dir }}/dotfiles/timewarrior/.taskrc", dest: ".taskrc" }
         - { src: "{{ playbook_dir }}/dotfiles/nvim", dest: ".config/nvim" }
       when: "'dotfiles' in tools_to_install"
-
-
-
-
 
