@@ -143,6 +143,43 @@ install_asdf_plugins() {
     echo
 }
 
+install_zsh() {
+    if [ ${#tools_to_install[@]} -gt 0 ]; then
+        if [ -z "${tools_to_install["zsh"]}" ] || [ "${tools_to_install["zsh"]}" -ne 1 ]; then
+            return 0
+        fi
+    fi
+
+    echo
+    echo "# zsh -------------------------- #"
+    echo
+
+    sudo apt install -y zsh
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to install zsh."
+        exit 1
+    fi
+
+    chsh -s $(which zsh)
+    sudo apt update
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to update default shell to zsh."
+        exit 1
+    fi
+
+    sh -c "$(wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)"
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to install ohmyzsh."
+        exit 1
+    fi
+
+    echo
+    echo "# zsh - Installation complete."
+    echo "# ------------------------------ #"
+    echo
+
+}
+
 install_i3() {
     if [ ${#tools_to_install[@]} -gt 0 ]; then
         if [ -z "${tools_to_install["i3"]}" ] || [ "${tools_to_install["i3"]}" -ne 1 ]; then
@@ -278,6 +315,13 @@ install_tmux() {
     fi
     echo "source-file ~/.config/tmux/tmux.conf" > ~/.tmux.conf
 
+    git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to clone tpm."
+        exit 1
+    fi
+    echo "source-file ~/.config/tmux/tmux.conf" > ~/.tmux.conf
+
     echo
     echo "# Tmux - Installation complete."
     echo "# ------------------------------ #"
@@ -352,6 +396,7 @@ install_dependencies() {
     install_asdf
     install_asdf_plugins
     install_i3
+    install_zsh
     install_rofi
     install_polybar
     install_kitty 
