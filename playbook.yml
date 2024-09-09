@@ -45,26 +45,14 @@
     - name: Install ASDF
       git:
         repo: 'https://github.com/asdf-vm/asdf.git'
-        dest: '~/.asdf'
+        dest: '$HOME/.asdf'
         version: 'v0.11.3'
         clone: yes
       when: "'asdf' in tools_to_install"
 
-    - name: Add ASDF to shell configuration
-      block:
-        - name: Add ASDF to .bashrc
-          lineinfile:
-            path: "{{ ansible_env.HOME }}/.bashrc"
-            line: '. $HOME/.asdf/asdf.sh'
-            state: present
-          when: ansible_env.SHELL == '/bin/bash'
-
-        - name: Add ASDF to .zshrc
-          lineinfile:
-            path: "{{ ansible_env.HOME }}/.zshrc"
-            line: '. $HOME/.asdf/asdf.sh'
-            state: present
-          when: ansible_env.SHELL == '/bin/zsh'
+    - name: Set PATH for ASDF
+      environment:
+        PATH: "~/.asdf/bin:~/.asdf/shims:{{ ansible_env.PATH }}"
 
     - name: Install ASDF plugins
       block:
