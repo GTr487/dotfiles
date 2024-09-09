@@ -70,21 +70,22 @@
 
     - name: Check if Oh My Zsh is already installed
       stat:
-        path: "{{ lookup('env', 'ZSH') }}"
-      register: zsh_stat
+        path: "{{ ansible_env.HOME }}/.oh-my-zsh"
+      register: zsh_install_check
       when: "'zsh' in tools_to_install"
 
-    - name: Remove existing Oh My Zsh folder if it exists
+    - name: Remove existing Oh My Zsh directory if exists
       file:
-        path: "{{ lookup('env', 'ZSH') }}"
+        path: "{{ ansible_env.HOME }}/.oh-my-zsh"
         state: absent
-      when: "'zsh' in tools_to_install and zsh_stat.stat.exists"
+      when: "'zsh' in tools_to_install and zsh_install_check.stat.exists"
 
     - name: Install Oh My Zsh
+      become_user: "{{ ansible_user }}"
       shell: |
         export RUNZSH=no
         curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh
-        when: "'zsh' in tools_to_install and not zsh_stat.stat.exists"
+      when: "'zsh' in tools_to_install and not zsh_install_check.stat.exists"
 
     - name: Install i3 window manager
       apt:
