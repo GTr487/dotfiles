@@ -33,7 +33,7 @@ apt_update() {
 
 execute_playbook() {
     echo "# Running playbook..."
-    ansible-playbook -i localhost, -c local playbook.yml
+    ansible-playbook -i localhost, -c local playbook.yml --ask-become-pass
 }
 
 show_header
