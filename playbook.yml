@@ -68,11 +68,23 @@
       args:
         creates: /bin/zsh
 
+    - name: Check if Oh My Zsh is already installed
+      stat:
+        path: "{{ lookup('env', 'ZSH') }}"
+      register: zsh_stat
+      when: "'zsh' in tools_to_install"
+
+    - name: Remove existing Oh My Zsh folder if it exists
+      file:
+        path: "{{ lookup('env', 'ZSH') }}"
+        state: absent
+      when: "'zsh' in tools_to_install and zsh_stat.stat.exists"
+
     - name: Install Oh My Zsh
       shell: |
         export RUNZSH=no
         curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh
-      when: "'zsh' in tools_to_install"
+        when: "'zsh' in tools_to_install and not zsh_stat.stat.exists"
 
     - name: Install i3 window manager
       apt:
