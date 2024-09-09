@@ -6,7 +6,6 @@
     tools_to_install:
       - basics
       - asdf
-      - asdf_plugins
       - zsh
       - i3
       - rofi
@@ -57,39 +56,6 @@
         state: present
       when: "'asdf' in tools_to_install"
       
-    - name: Reload profile
-      shell: source ~/.profile
-      when: "'asdf' in tools_to_install"
-
-    - name: Install ASDF plugins
-      block:
-        - name: Add ASDF Node.js plugin
-          command: ~/.asdf/bin/asdf plugin-add nodejs https://github.com/asdf-vm/asdf-nodejs.git
-          args:
-            creates: "{{ ansible_env.HOME }}/.asdf/plugins/nodejs"
-
-        - name: Install Node.js with ASDF
-          command: ~/.asdf/bin/asdf install nodejs 22.8.0
-          args:
-            creates: "{{ ansible_env.HOME }}/.asdf/installs/nodejs/22.8.0"
-
-        - name: Set Node.js version globally
-          command: ~/.asdf/bin/asdf global nodejs 22.8.0
-
-        - name: Add ASDF Java plugin
-          command: ~/.asdf/bin/asdf plugin-add java
-          args:
-            creates: "{{ ansible_env.HOME }}/.asdf/plugins/java"
-
-        - name: Install Java 11 with ASDF
-          command: ~/.asdf/bin/asdf install java openjdk-11.0.2
-          args:
-            creates: "{{ ansible_env.HOME }}/.asdf/installs/java/openjdk-11.0.2"
-
-        - name: Set Java version globally
-          command: ~/.asdf/bin/asdf global java openjdk-11.0.2
-      when: "'asdf_plugins' in tools_to_install"
-
     - name: Install Zsh
       apt:
         name: zsh
@@ -105,7 +71,7 @@
     - name: Install Oh My Zsh
       shell: |
         export RUNZSH=no
-        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+        curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh
       when: "'zsh' in tools_to_install"
 
     - name: Install i3 window manager
@@ -165,22 +131,40 @@
         state: present
       when: "'timewarrior' in tools_to_install"
 
+    - name: Ensure dotfile directories exist
+      file:
+        path: "{{ lookup('env', 'HOME') }}/{{ item.dest | dirname }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - { dest: ".bashrc" }
+        - { dest: ".zshrc" }
+        - { dest: ".oh-my-zsh/themes/cyberpunk.zsh-theme" }
+        - { dest: ".config/i3/config" }
+        - { dest: ".config/kitty/kitty.conf" }
+        - { dest: ".config/polybar/config" }
+        - { dest: ".config/rofi/config.rasi" }
+        - { dest: ".config/tmux/tmux.conf" }
+        - { dest: ".taskrc" }
+        - { dest: ".config/nvim" }
+      when: "'dotfiles' in tools_to_install"
+
     - name: Symlink dotfiles
       ansible.builtin.file:
-        src: "{{ item.src }}"
+        src: "{{ playbook_dir }}/dotfiles/{{ item.src }}"
         dest: "{{ lookup('env', 'HOME') }}/{{ item.dest }}"
         state: link
         force: yes  # Overwrite existing files or directories
       loop:
-        - { src: "{{ playbook_dir }}/dotfiles/bash/.bashrc", dest: ".bashrc" }
-        - { src: "{{ playbook_dir }}/dotfiles/zsh/.zshrc", dest: ".zshrc" }
-        - { src: "{{ playbook_dir }}/dotfiles/zsh/cyberpunk.zsh-theme", dest: ".oh-my-zsh/themes/cyberpunk.zsh-theme" }
-        - { src: "{{ playbook_dir }}/dotfiles/i3/config", dest: ".config/i3/config" }
-        - { src: "{{ playbook_dir }}/dotfiles/kitty/kitty.conf", dest: ".config/kitty/kitty.conf" }
-        - { src: "{{ playbook_dir }}/dotfiles/polybar/config", dest: ".config/polybar/config" }
-        - { src: "{{ playbook_dir }}/dotfiles/rofi/config.rasi", dest: ".config/rofi/config.rasi" }
-        - { src: "{{ playbook_dir }}/dotfiles/tmux/tmux.conf", dest: ".config/tmux/tmux.conf" }
-        - { src: "{{ playbook_dir }}/dotfiles/timewarrior/.taskrc", dest: ".taskrc" }
-        - { src: "{{ playbook_dir }}/dotfiles/nvim", dest: ".config/nvim" }
+        - { src: "bash/.bashrc", dest: ".bashrc" }
+        - { src: "zsh/.zshrc", dest: ".zshrc" }
+        - { src: "zsh/cyberpunk.zsh-theme", dest: ".oh-my-zsh/themes/cyberpunk.zsh-theme" }
+        - { src: "i3/config", dest: ".config/i3/config" }
+        - { src: "kitty/kitty.conf", dest: ".config/kitty/kitty.conf" }
+        - { src: "polybar/config", dest: ".config/polybar/config" }
+        - { src: "rofi/config.rasi", dest: ".config/rofi/config.rasi" }
+        - { src: "tmux/tmux.conf", dest: ".config/tmux/tmux.conf" }
+        - { src: "timewarrior/.taskrc", dest: ".taskrc" }
+        - { src: "nvim", dest: ".config/nvim" }
       when: "'dotfiles' in tools_to_install"
 
