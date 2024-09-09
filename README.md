@@ -1,87 +1,35 @@
-# dottools
+# Development Environment Setup
 
-`dottools` is a Bash script designed to set up a development environment on Linux by installing essential tools and managing custom configuration files (dotfiles).
+This repository contains a set of dotfiles and an Ansible playbook for setting up a development environment. The provided `setup.sh` script installs Ansible, updates the package list, and executes the Ansible playbook to configure your system according to the dotfiles in this repository.
 
-## Usage
+## `setup.sh` Script
 
-```bash
-./dottools [OPTIONS]
-```
+The `setup.sh` script automates the setup process by performing the following steps:
 
-### Description
+1. **Updates Package List**: Runs `apt update` if necessary.
+2. **Installs Ansible**: Installs Ansible if it is not already installed.
+3. **Executes Ansible Playbook**: Runs the `playbook.yml` to configure your system using the dotfiles.
 
-This script installs key development tools like i3, Rofi, Polybar, Kitty, and Tmux, and manages dotfiles by copying them to and from specified locations.
+### Usage
 
-### Options
+1. **Clone the Repository**:
+   ```bash
+   git clone <repository-url>
+   cd <repository-directory>
+   ```
 
-- `-h, --help`  
-  Display this help message and exit.
+2. **Make the Script Executable**:
+   ```bash
+   chmod +x setup.sh
+   ```
 
-- `-s, --setup`  
-  Install and configure the base development environment.
+3. **Run the Script**:
+   ```bash
+   ./setup.sh
+   ```
 
-- `-i, --install`  
-  Install all required dependencies (i3, Rofi, Polybar, Kitty, Tmux).
+This will set up your development environment according to the configuration specified in `playbook.yml` and the dotfiles provided in the `dotfiles` directory.
 
-- `-g, --get`  
-  Retrieve dotfiles from the source paths specified in the `.include` file.
+## Playbook Configuration
 
-- `-p, --put`  
-  Deploy dotfiles to the destination paths specified in the `.include` file.
-
-### Notes
-
-- You may need to run this script as a superuser (`sudo`).
-
-## Dependencies
-
-- `apt`: This script uses the `apt` package manager to install software.
-- `sudo`: Required for some installation operations.
-
-## Installation of Dependencies
-
-To run this script, the following tools must be installed:
-
-- `bash`
-- `sudo`
-- `apt`
-
-### Example Execution
-
-```bash
-sudo ./dottools --setup
-```
-
-### The `.include` File
-
-The `.include` file is a plain text file that specifies the configuration files (dotfiles) and their associated paths. This file is necessary for the script to know which files to copy and where to find or place them.
-
-#### Format of the `.include` File
-
-Each line in the `.include` file should contain two fields separated by a space or tab:
-
-1. **File Name**: A label or name that identifies the file or group of files to be managed.
-2. **File Path**: The full or relative path to the configuration file on the filesystem.
-
-#### Example of `.include`
-
-```plaintext
-bashrc    ~/.bashrc
-vimrc     ~/.vimrc
-i3config  ~/.config/i3/config
-kitty     ~/.config/kitty/*
-tmux      ~/.tmux.conf
-```
-
-- **`bashrc`**: The `.bashrc` file located in the user's home directory.
-- **`vimrc`**: The `.vimrc` file located in the user's home directory.
-- **`i3config`**: The i3 configuration file located at `~/.config/i3/config`.
-- **`kitty`**: All files in the `~/.config/kitty/` directory.
-- **`tmux`**: The Tmux configuration file located in the user's home directory.
-
-### Important Notes
-
-- Paths can include the `~` character to represent the user's home directory.
-- To specify multiple files within a directory, you can use a wildcard (`*`).
-- Make sure there are no extra spaces at the end of each line and that the names and paths are correct to avoid errors during script execution.
-
+The `playbook.yml` file is an Ansible playbook that manages the configuration of your system. It includes tasks to create symbolic links for dotfiles, install necessary packages, and configure your environment.
