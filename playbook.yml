@@ -51,15 +51,20 @@
       when: "'asdf' in tools_to_install"
 
     - name: Add ASDF to shell configuration
-      lineinfile:
-        path: "{{ ansible_env.HOME }}/.bashrc"
-        line: '. $HOME/.asdf/asdf.sh'
-        state: present
-      when: "'asdf' in tools_to_install"
+      block:
+        - name: Add ASDF to .bashrc
+          lineinfile:
+            path: "{{ ansible_env.HOME }}/.bashrc"
+            line: '. $HOME/.asdf/asdf.sh'
+            state: present
+          when: ansible_env.SHELL == '/bin/bash'
 
-    - name: Reload shell configuration
-      shell: source ~/.bashrc
-      when: "'asdf' in tools_to_install"
+        - name: Add ASDF to .zshrc
+          lineinfile:
+            path: "{{ ansible_env.HOME }}/.zshrc"
+            line: '. $HOME/.asdf/asdf.sh'
+            state: present
+          when: ansible_env.SHELL == '/bin/zsh'
 
     - name: Install ASDF plugins
       block:
