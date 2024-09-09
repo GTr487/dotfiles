@@ -87,11 +87,41 @@
         curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh
       when: "'zsh' in tools_to_install"
 
-    - name: Install i3 window manager
-      apt:
-        name: i3
-        state: present
-      when: "'i3' in tools_to_install"
+    - name: Install i3
+      become: yes
+      block:
+        - name: Download i3 keyring
+          get_url:
+            url: https://debian.sur5r.net/i3/pool/main/s/sur5r-keyring/sur5r-keyring_2024.03.04_all.deb
+            dest: /tmp/keyring.deb
+            checksum: 'sha256:f9bb4340b5ce0ded29b7e014ee9ce788006e9bbfe31e96c09b2118ab91fca734'
+          register: keyring_download
+
+        - name: Install i3 keyring
+          apt:
+            deb: /tmp/keyring.deb
+            state: present
+          when: keyring_download.changed
+
+        - name: Add i3 repository
+          lineinfile:
+            path: /etc/apt/sources.list.d/sur5r-i3.list
+            line: "deb http://debian.sur5r.net/i3/ {{ ansible_lsb.codename }} universe"
+            create: yes
+
+        - name: Update apt package index
+          apt:
+            update_cache: yes
+
+        - name: Install i3
+          apt:
+            name: i3
+            state: present
+
+        - name: Remove i3 keyring file
+          file:
+            path: /tmp/keyring.deb
+            state: absent
 
     - name: Install Rofi
       apt:
