@@ -50,6 +50,17 @@
         clone: yes
       when: "'asdf' in tools_to_install"
 
+    - name: Add ASDF to shell configuration
+      lineinfile:
+        path: "{{ ansible_env.HOME }}/.bashrc"
+        line: '. $HOME/.asdf/asdf.sh'
+        state: present
+      when: "'asdf' in tools_to_install"
+
+    - name: Reload shell configuration
+      shell: source ~/.bashrc
+      when: "'asdf' in tools_to_install"
+
     - name: Install ASDF plugins
       block:
         - name: Add ASDF Node.js plugin
