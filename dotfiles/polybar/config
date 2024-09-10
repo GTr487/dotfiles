@@ -16,7 +16,7 @@ foreground = ${color.foreground}
 border-size = 0
 border-color = #ffffff
 font-0 = xft:Monospace:size=10:weight=regular
-modules-center = 
+modules-center = task_timer
 modules-left = workspace
 modules-right = cpu date
 
@@ -45,7 +45,7 @@ label-empty-padding = 1
 
 [module/date]
 type = internal/date
-interval = 1.0
+interval = 60
 
 date = "%d/%m/%Y"
 time = "%H:%M"
@@ -72,4 +72,8 @@ label = " %percentage%%"
 label-alignment = right
 label-foreground = ${color.emphasis-foreground}
 
-
+[module/task_timer]
+type = custom/script
+exec = ~/.config/polybar/scripts/task_timer.sh
+interval = 60
+label = %output%
