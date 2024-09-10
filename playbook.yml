@@ -13,7 +13,7 @@
       - kitty
       - tmux
       - neovim
-      - timewarrior
+      - taskwarrior
       - dotfiles
 
   tasks:
@@ -32,6 +32,7 @@
           - python3
           - python3-pip
           - tree
+          - jq
         state: present
       when: "'basics' in tools_to_install"
 
@@ -166,13 +167,12 @@
             state: absent
       when: "'neovim' in tools_to_install"
 
-    - name: Install Timewarrior and Taskwarrior
+    - name: Install Taskwarrior
       apt:
         name:
-          - timewarrior
           - taskwarrior
         state: present
-      when: "'timewarrior' in tools_to_install"
+      when: "'taskwarrior' in tools_to_install"
 
     - name: Ensure dotfile directories exist
       file:
@@ -185,7 +185,7 @@
         - { dest: ".oh-my-zsh/themes/cyberpunk.zsh-theme" }
         - { dest: ".config/i3/config" }
         - { dest: ".config/kitty/kitty.conf" }
-        - { dest: ".config/polybar/config" }
+        - { dest: ".config/polybar" }
         - { dest: ".config/rofi/config.rasi" }
         - { dest: ".config/tmux/tmux.conf" }
         - { dest: ".taskrc" }
@@ -204,7 +204,7 @@
         - { src: "zsh/cyberpunk.zsh-theme", dest: ".oh-my-zsh/themes/cyberpunk.zsh-theme" }
         - { src: "i3/config", dest: ".config/i3/config" }
         - { src: "kitty/kitty.conf", dest: ".config/kitty/kitty.conf" }
-        - { src: "polybar/config", dest: ".config/polybar/config" }
+        - { src: "polybar", dest: ".config/polybar" }
         - { src: "rofi/config.rasi", dest: ".config/rofi/config.rasi" }
         - { src: "tmux/tmux.conf", dest: ".config/tmux/tmux.conf" }
         - { src: "timewarrior/.taskrc", dest: ".taskrc" }
