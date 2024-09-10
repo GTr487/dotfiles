@@ -9,7 +9,6 @@
       - zsh
       - i3
       - rofi
-      - polybar
       - kitty
       - tmux
       - neovim
@@ -130,12 +129,6 @@
         state: present
       when: "'rofi' in tools_to_install"
 
-    - name: Install Polybar
-      apt:
-        name: polybar
-        state: present
-      when: "'polybar' in tools_to_install"
-
     - name: Install Kitty terminal
       apt:
         name: kitty
@@ -183,9 +176,8 @@
         - { dest: ".bashrc" }
         - { dest: ".zshrc" }
         - { dest: ".oh-my-zsh/themes/cyberpunk.zsh-theme" }
-        - { dest: ".config/i3/config" }
+        - { dest: ".config/i3" }
         - { dest: ".config/kitty/kitty.conf" }
-        - { dest: ".config/polybar" }
         - { dest: ".config/rofi/config.rasi" }
         - { dest: ".config/tmux/tmux.conf" }
         - { dest: ".taskrc" }
@@ -202,9 +194,8 @@
         - { src: "bash/.bashrc", dest: ".bashrc" }
         - { src: "zsh/.zshrc", dest: ".zshrc" }
         - { src: "zsh/cyberpunk.zsh-theme", dest: ".oh-my-zsh/themes/cyberpunk.zsh-theme" }
-        - { src: "i3/config", dest: ".config/i3/config" }
+        - { src: "i3", dest: ".config/i3" }
         - { src: "kitty/kitty.conf", dest: ".config/kitty/kitty.conf" }
-        - { src: "polybar", dest: ".config/polybar" }
         - { src: "rofi/config.rasi", dest: ".config/rofi/config.rasi" }
         - { src: "tmux/tmux.conf", dest: ".config/tmux/tmux.conf" }
         - { src: "timewarrior/.taskrc", dest: ".taskrc" }
