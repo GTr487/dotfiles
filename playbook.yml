@@ -167,6 +167,58 @@
         state: present
       when: "'taskwarrior' in tools_to_install"
 
+    - name: Install Docker
+      block:
+        - name: Install necessary packages for Docker repository
+          apt:
+            name:
+              - apt-transport-https
+              - ca-certificates
+              - curl
+              - software-properties-common
+            state: present
+
+        - name: Add Docker GPG key
+          apt_key:
+            url: https://download.docker.com/linux/ubuntu/gpg
+            state: present
+
+        - name: Add Docker repository
+          apt_repository:
+            repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable
+            state: present
+
+        - name: Update package index after adding Docker repository
+          apt:
+            update_cache: yes
+
+        - name: Install Docker
+          apt:
+            name: docker-ce
+            state: present
+
+        - name: Start and enable Docker service
+          systemd:
+            name: docker
+            state: started
+            enabled: yes
+
+        - name: Determine the latest version of Docker Compose
+          command: >
+            curl -s https://api.github.com/repos/docker/compose/releases/latest
+          register: latest_release
+
+        - name: Set Docker Compose version
+          set_fact:
+            docker_compose_version: "{{ latest_release.stdout | from_json | json_query('tag_name') }}"
+
+        - name: Download Docker Compose binary
+          get_url:
+            url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-{{ ansible_facts['os_family'] | lower }}-{{ ansible_facts['processor_cores'] | first }}"
+            dest: /usr/local/bin/docker-compose
+            mode: 'u+x'
+      when: "'docker' in tools_to_install"
+
     - name: Ensure dotfile directories exist
       file:
         path: "{{ lookup('env', 'HOME') }}/{{ item.dest | dirname }}"
@@ -182,6 +234,7 @@
         - { dest: ".config/tmux/tmux.conf" }
         - { dest: ".taskrc" }
         - { dest: ".config/nvim" }
+        - { dest: ".config/shell" }
       when: "'dotfiles' in tools_to_install"
 
     - name: Symlink dotfiles
@@ -200,5 +253,6 @@
         - { src: "tmux/tmux.conf", dest: ".config/tmux/tmux.conf" }
         - { src: "timewarrior/.taskrc", dest: ".taskrc" }
         - { src: "nvim", dest: ".config/nvim" }
+        - { src: "shell", dest: ".config/shell" }
       when: "'dotfiles' in tools_to_install"
 

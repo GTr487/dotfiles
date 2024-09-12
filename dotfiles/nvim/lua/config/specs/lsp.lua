@@ -84,6 +84,7 @@ return {
                     "eslint",                     -- HTML|CSS|JSON|JS|TS
                     "sqlls",                      -- SQL
                     "yamlls",                     -- YAML
+                    "ts_ls"                       -- Javascript/Typescript
                 },
                 handlers = {
                     -- this first function is the "default handler"
