@@ -117,11 +117,13 @@ if ! shopt -oq posix; then
   fi
 fi
 
-export TERM=xterm-256color
+# Cargar variables de entorno
+if [ -f ~/.config/shell/.env ]; then
+    source ~/.config/shell/.env
+fi
 
-. "$HOME/.asdf/asdf.sh"
-. "$HOME/.asdf/completions/asdf.bash"
-
-export PATH="$PATH:/opt/nvim-linux64/bin"
-
+# Cargar aliases
+if [ -f ~/.config/shell/.alias ]; then
+    source ~/.config/shell/.alias
+fi
 
