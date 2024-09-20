@@ -118,8 +118,13 @@ if ! shopt -oq posix; then
 fi
 
 # Cargar variables de entorno
-if [ -f ~/.config/shell/.env ]; then
-    source ~/.config/shell/.env
+if [ -f ~/.config/shell/.variables ]; then
+    source ~/.config/shell/.varibles
+fi
+
+# Cargar funciones
+if [ -f ~/.config/shell/.funcs ]; then
+    source ~/.config/shell/.funcs
 fi
 
 # Cargar aliases

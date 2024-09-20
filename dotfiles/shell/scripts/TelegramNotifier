@@ -1,0 +1,31 @@
+#!/bin/bash
+set -e
+
+SCRIPT_DIR="$(dirname $0)"
+ENV_FILE="$SCRIPT_DIR/config/telgramNotifier.env"
+
+if [ ! -f "$ENV_FILE" ]; then
+    echo "Error: $ENV_FILE file does not exist."
+    exit 1
+fi
+
+source "$ENV_FILE"
+
+if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
+    echo "Error: TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID is not defined."
+    exit 1
+fi
+
+MESSAGE="$@"
+
+if [ -z "$MESSAGE" ]; then
+    echo "Error: No message provided."
+    exit 1
+fi
+
+if ! curl -s -X POST https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage -d chat_id=$TELEGRAM_CHAT_ID -d text="$MESSAGE" > /dev/null 2>&1; then
+    echo "Error: Could not send the message to Telegram."
+    exit 1
+fi
+
+echo "Message sent successfully."

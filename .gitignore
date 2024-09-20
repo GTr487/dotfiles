@@ -1,0 +1,45 @@
+# General
+.DS_Store
+*.swp
+*.swo
+*.bak
+*~
+*.env
+
+# Ignore node_modules (if you have any Node.js projects or related configurations)
+node_modules/
+
+# Ignore Python bytecode and caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore system-specific files
+.cache/
+.local/share/Trash/
+.history
+.zsh_history
+.bash_history
+.inputrc
+.gnupg/
+
+# Ignore SSH and GPG keys
+.ssh/
+.gpg/
+
+# Ignore personal configuration files that shouldn't be shared
+.secrets/
+.vscode/
+.idea/
+
+# Ignore Asinble specific files (if any)
+asinble-config.json
+asinble-env/
+asinble-backup/
+
+# Ignore Vim temporary files
+.vim/
+.vimrc.bak
+*.un~
+
