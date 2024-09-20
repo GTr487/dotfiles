@@ -1,4 +1,4 @@
-alias cd="cd ~"
+alias ~="cd ~"
 alias ..="cd .."
 alias ...="cd ../.."
 alias ....="cd ../../.."
@@ -23,7 +23,11 @@ alias kill9="kill -9"
 
 alias reload-bash='source ~/.bashrc'
 alias reload-zsh='source ~/.zshrc'
-alias reload-shell='reload-bash; reload-zsh'
 alias reload-shell='if [ -n "$BASH_VERSION" ]; then reload-bash; elif [ -n "$ZSH_VERSION" ]; then reload-zsh; fi'
 
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+
+# fzf
+alias fzwr='cd $(find ~/workspace -path "*/node_modules" -prune -o -type d -regex ".*/repositories/[^/]+\.git" -print | fzf --preview "tree -C -L 2 {}")'
+alias fzdh='cd $(find ~ -type d 2>/dev/null | fzf --preview "tree -C -L 2 {}" )'
+alias fzfh='nvim $(find ~ -type f 2>/dev/null | fzf --preview "cat {}")' # TODO: corregir

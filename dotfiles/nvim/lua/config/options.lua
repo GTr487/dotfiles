@@ -3,9 +3,9 @@ local opt = vim.opt
 
 -- Editing and Spacing
 opt.expandtab = true            -- Convert tabs to spaces
-opt.shiftwidth = 4              -- Number of spaces for each indentation level
-opt.tabstop = 4                 -- Number of spaces a tab character represents
-opt.softtabstop = 4             -- Number of spaces a tab character represents in insert mode
+opt.shiftwidth = 2              -- Number of spaces for each indentation level
+opt.tabstop = 2                 -- Number of spaces a tab character represents
+opt.softtabstop = 2             -- Number of spaces a tab character represents in insert mode
 
 -- Search and Highlight
 opt.hlsearch = false            -- Disable search result highlighting
