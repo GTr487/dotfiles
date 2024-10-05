@@ -84,10 +84,6 @@ return {
 					"sqlls", -- SQL
 					"yamlls", -- YAML
 					"ts_ls", -- Javascript/Typescript
-
-					"prettier",
-					"stylua",
-					"isort",
 				},
 				handlers = {
 					-- this first function is the "default handler"

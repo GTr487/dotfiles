@@ -32,6 +32,7 @@
           - python3-pip
           - tree
           - jq
+          - at
         state: present
       when: "'basics' in tools_to_install"
 
@@ -43,9 +44,9 @@
 
     - name: Install ASDF
       git:
-        repo: 'https://github.com/asdf-vm/asdf.git'
-        dest: '{{ ansible_env.HOME }}/.asdf'
-        version: 'v0.11.3'
+        repo: "https://github.com/asdf-vm/asdf.git"
+        dest: "{{ ansible_env.HOME }}/.asdf"
+        version: "v0.11.3"
         clone: yes
       when: "'asdf' in tools_to_install"
 
@@ -55,7 +56,7 @@
         line: 'export PATH="$HOME/.asdf/bin:$HOME/.asdf/shims:$PATH"'
         state: present
       when: "'asdf' in tools_to_install"
-      
+
     - name: Install Zsh
       apt:
         name: zsh
@@ -94,7 +95,7 @@
           get_url:
             url: https://debian.sur5r.net/i3/pool/main/s/sur5r-keyring/sur5r-keyring_2024.03.04_all.deb
             dest: /tmp/keyring.deb
-            checksum: 'sha256:f9bb4340b5ce0ded29b7e014ee9ce788006e9bbfe31e96c09b2118ab91fca734'
+            checksum: "sha256:f9bb4340b5ce0ded29b7e014ee9ce788006e9bbfe31e96c09b2118ab91fca734"
           register: keyring_download
 
         - name: Install i3 keyring
@@ -216,14 +217,14 @@
           get_url:
             url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-{{ ansible_facts['os_family'] | lower }}-{{ ansible_facts['processor_cores'] | first }}"
             dest: /usr/local/bin/docker-compose
-            mode: 'u+x'
+            mode: "u+x"
       when: "'docker' in tools_to_install"
 
     - name: Ensure dotfile directories exist
       file:
         path: "{{ lookup('env', 'HOME') }}/{{ item.dest | dirname }}"
         state: directory
-        mode: '0755'
+        mode: "0755"
       loop:
         - { dest: ".bashrc" }
         - { dest: ".zshrc" }
@@ -242,11 +243,14 @@
         src: "{{ playbook_dir }}/dotfiles/{{ item.src }}"
         dest: "{{ lookup('env', 'HOME') }}/{{ item.dest }}"
         state: link
-        force: yes  # Overwrite existing files or directories
+        force: yes # Overwrite existing files or directories
       loop:
         - { src: "bash/.bashrc", dest: ".bashrc" }
         - { src: "zsh/.zshrc", dest: ".zshrc" }
-        - { src: "zsh/cyberpunk.zsh-theme", dest: ".oh-my-zsh/themes/cyberpunk.zsh-theme" }
+        - {
+            src: "zsh/cyberpunk.zsh-theme",
+            dest: ".oh-my-zsh/themes/cyberpunk.zsh-theme",
+          }
         - { src: "i3", dest: ".config/i3" }
         - { src: "kitty/kitty.conf", dest: ".config/kitty/kitty.conf" }
         - { src: "rofi/config.rasi", dest: ".config/rofi/config.rasi" }
@@ -255,4 +259,3 @@
         - { src: "nvim", dest: ".config/nvim" }
         - { src: "shell", dest: ".config/shell" }
       when: "'dotfiles' in tools_to_install"
-
