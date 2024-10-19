@@ -1,14 +1,24 @@
-# PATH
-export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
+add_to_path() {
+  if [[ ":$PATH:" != *":$1:"* ]]; then
+    PATH="$1:$PATH"
+  fi
+}
 
+# - PATH -----
+PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
+
+add_to_path "/opt/nvim-linux64/bin"
+add_to_path "/opt/sonar-scanner/bin"
+add_to_path "/usr/local/bin/tmuxifier/bin"
+add_to_path "$HOME/.config/shell/scripts"
+
+# - OTHER ----
 export TERM=xterm-256color
-
 . "$HOME/.asdf/asdf.sh"
 . "$HOME/.asdf/completions/asdf.bash"
 
-export PATH="$PATH:/opt/nvim-linux64/bin"
 
-export PATH="$PATH:/opt/sonar-scanner/bin"
+export TMUXIFIER_LAYOUT_PATH="$HOME/.tmux-layouts"
+export EDITOR=nvim
 
-export PATH="$PATH:$HOME/.config/shell/scripts"
-
+eval "$(tmuxifier init -)"

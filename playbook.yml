@@ -11,6 +11,7 @@
       - rofi
       - kitty
       - tmux
+      - tmuxifier
       - neovim
       - taskwarrior
       - dotfiles
@@ -142,6 +143,14 @@
         state: present
       when: "'tmux' in tools_to_install"
 
+    - name: Install Tmuxifier
+      git:
+        repo: "https://github.com/jimeh/tmuxifier.git"
+        dest: /usr/local/bin/tmuxifier
+        version: main
+        update: no
+      when: "'tmuxifier' in tools_to_install"
+
     - name: Install Neovim
       block:
         - name: Download Neovim
@@ -233,6 +242,7 @@
         - { dest: ".config/kitty/kitty.conf" }
         - { dest: ".config/rofi/config.rasi" }
         - { dest: ".config/tmux/tmux.conf" }
+        - { dest: ".tmux-layouts" }
         - { dest: ".taskrc" }
         - { dest: ".config/nvim" }
         - { dest: ".config/shell" }
@@ -255,6 +265,7 @@
         - { src: "kitty/kitty.conf", dest: ".config/kitty/kitty.conf" }
         - { src: "rofi/config.rasi", dest: ".config/rofi/config.rasi" }
         - { src: "tmux/tmux.conf", dest: ".config/tmux/tmux.conf" }
+        - { src: "tmux/layouts", dest: ".tmux-layouts" }
         - { src: "timewarrior/.taskrc", dest: ".taskrc" }
         - { src: "nvim", dest: ".config/nvim" }
         - { src: "shell", dest: ".config/shell" }
