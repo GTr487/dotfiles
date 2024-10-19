@@ -9,6 +9,9 @@
 # Ignore node_modules (if you have any Node.js projects or related configurations)
 node_modules/
 
+# Ignore nvim tmp files
+*.draft
+
 # Ignore Python bytecode and caches
 __pycache__/
 *.pyc
