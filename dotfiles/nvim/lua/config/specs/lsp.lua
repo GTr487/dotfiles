@@ -32,28 +32,31 @@ return {
           ["<C-Space>"] = cmp.mapping.complete(),
           ["<C-u>"] = cmp.mapping.scroll_docs(-4),
           ["<C-d>"] = cmp.mapping.scroll_docs(4),
+          ["<C-e>"] = cmp.mapping.abort(),
+          ["<C-n>"] = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.insert }),
+          ["<C-p>"] = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.insert }),
+          ["<CR>"] = cmp.mapping.confirm({ select = true }),
           ["<Tab>"] = cmp.mapping(function(fallback)
             if cmp.visible() then
-              cmp.select_next_item()
+              cmp.confirm({ select = true })
+            elseif require("luasnip").expand_or_jumpable() then
+              require("luasnip").expand_or_jump()
             else
               fallback()
             end
-          end, { "i", "s" }),
-          ["<S-Tab>"] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-              cmp.select_prev_item()
-            else
-              fallback()
-            end
-          end, { "i", "s" }),
-          ["<CR>"] = cmp.mapping.confirm({ select = true }),
+          end),
         }),
         sources = {
           { name = "nvim_lsp" },
           { name = "luasnip" },
           { name = "buffer" },
         },
+        experimental = {
+          ghost_text = true,
+        },
       })
+
+      vim.api.nvim_set_hl(0, "CmpGhostText", { link = "Comment", default = true })
     end,
   },
 
@@ -99,9 +102,9 @@ return {
           "clangd", -- c++
           "bashls", -- bash
           "eslint", -- HTML|CSS|JSON|JS|TS
-          "sqlls", -- SQL
+          "sqlls",  -- SQL
           "yamlls", -- YAML
-          "ts_ls", -- Javascript/Typescript
+          "ts_ls",  -- Javascript/Typescript
         },
         handlers = {
           -- this first function is the "default handler"
