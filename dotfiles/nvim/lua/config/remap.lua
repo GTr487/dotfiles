@@ -1,11 +1,15 @@
 vim.g.mapleader = " "
-vim.keymap.set("n", "<leader>pv", vim.cmd.Ex)
+-- vim.keymap.set("n", "<leader>pv", vim.cmd.Ex)
 
--- Resize windows using Shift + j/k/h/l
-vim.keymap.set("n", "<A-k>", "<cmd>resize +2<CR>", { noremap = true, silent = true }) -- Increase vertical size
-vim.keymap.set("n", "<A-j>", "<cmd>resize -2<CR>", { noremap = true, silent = true }) -- Decrease vertical size
-vim.keymap.set("n", "<A-h>", "<cmd>vertical resize -2<CR>", { noremap = true, silent = true }) -- Decrease horizontal size
-vim.keymap.set("n", "<A-l>", "<cmd>vertical resize +2<CR>", { noremap = true, silent = true }) -- Increase horizontal size
+-- Resize windows using leader + J/K/H/L
+vim.keymap.set("n", "<leader>K", "<cmd>resize +2<CR>", { noremap = true, silent = true })          -- Increase vertical size
+vim.keymap.set("n", "<leader>J", "<cmd>resize -2<CR>", { noremap = true, silent = true })          -- Decrease vertical size
+vim.keymap.set("n", "<leader>H", "<cmd>vertical resize -2<CR>", { noremap = true, silent = true }) -- Decrease horizontal size
+vim.keymap.set("n", "<leader>L", "<cmd>vertical resize +2<CR>", { noremap = true, silent = true }) -- Increase horizontal size
+
+-- splits
+vim.keymap.set("n", "<leader>sh", ":split<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>sv", ":vsplit<CR>", { noremap = true, silent = true })
 
 -- Move blocks in visual mode
 vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv")
@@ -43,10 +47,10 @@ vim.keymap.set("n", "<leader>x", "<cmd>!chmod +x %<CR>", { silent = true })
 
 -- Custom function
 vim.keymap.set("n", "<leader>ed", function()
-	require("custom.draft").open_draft_window()
+  require("custom.draft").open_draft_window()
 end)
 
 -- Reload the current configuration
 vim.keymap.set("n", "<leader><leader>", function()
-	vim.cmd("so")
+  vim.cmd("so")
 end)
