@@ -1,0 +1,141 @@
+---
+- name: Setup Development Environment
+  hosts: localhost
+  become: yes
+  vars:
+    tools_to_install:
+      - essentials
+      - basics
+      - asdf
+      - zsh
+      - tmuxifier
+      - dotfiles
+  tasks:
+    - name: Install essentials
+      pacman:
+        name:
+          - xorg-server
+          - xorg-xinit
+          - bspwm
+          - sxhkd
+          - dunst
+          - libnotify
+          - xclip
+          - firefox
+          - ly
+          - fzf
+          - git
+          - zsh
+          - rofi
+          - kitty
+          - tmux
+          - neovim
+        state: present
+      when: "'essentials' in tools_to_install"
+
+    - name: Install basic tools
+      pacman:
+        name:
+          - net-tools
+          - wget
+          - zip
+          - unzip
+          - curl
+          - ripgrep
+          - python
+          - python-pip
+          - tree
+          - jq
+          - at
+        state: present
+      when: "'basics' in tools_to_install"
+
+    - name: Install PyVim
+      pip:
+        name: pyvim
+        executable: pip3
+      when: "'basics' in tools_to_install"
+
+    - name: Install ASDF
+      git:
+        repo: "https://github.com/asdf-vm/asdf.git"
+        dest: "{{ ansible_env.HOME }}/.asdf"
+        version: "v0.11.3"
+        clone: yes
+      when: "'asdf' in tools_to_install"
+
+    - name: Ensure ASDF is in PATH
+      lineinfile:
+        path: ~/.profile
+        line: 'export PATH="$HOME/.asdf/bin:$HOME/.asdf/shims:$PATH"'
+        state: present
+      when: "'asdf' in tools_to_install"
+
+    - name: Set Zsh as default shell
+      command: chsh -s /bin/zsh
+      when: "'zsh' in tools_to_install"
+      args:
+        creates: /bin/zsh
+
+    - name: Check if Oh My Zsh is already installed
+      stat:
+        path: "{{ lookup('env', 'HOME') }}/.oh-my-zsh"
+      register: zsh_install_check
+      when: "'zsh' in tools_to_install"
+
+    - name: Remove existing Oh My Zsh directory if exists
+      file:
+        path: "{{ lookup('env', 'HOME') }}/.oh-my-zsh"
+        state: absent
+      when: "'zsh' in tools_to_install and zsh_install_check.stat.exists"
+
+    - name: Install Oh My Zsh
+      shell: |
+        export RUNZSH=no
+        export ZSH="{{ lookup('env', 'HOME') }}/.oh-my-zsh"
+        curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh
+      when: "'zsh' in tools_to_install"
+
+    - name: Install Tmuxifier
+      git:
+        repo: "https://github.com/jimeh/tmuxifier.git"
+        dest: "{{ lookup('env', 'HOME') }}/.tmuxifier"
+        version: main
+        update: no
+      when: "'tmuxifier' in tools_to_install"
+
+    - name: Ensure dotfile directories exist
+      file:
+        path: "{{ lookup('env', 'HOME') }}/{{ item.dest | dirname }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - { dest: ".zshrc" }
+        - { dest: ".oh-my-zsh/themes/cyberpunk.zsh-theme" }
+        - { dest: ".config/kitty/kitty.conf" }
+        - { dest: ".config/rofi/config.rasi" }
+        - { dest: ".config/tmux/tmux.conf" }
+        - { dest: ".tmux-layouts" }
+        - { dest: ".config/nvim" }
+        - { dest: ".config/shell" }
+      when: "'dotfiles' in tools_to_install"
+
+    - name: Symlink dotfiles
+      ansible.builtin.file:
+        src: "{{ playbook_dir }}/../dotfiles/{{ item.src }}"
+        dest: "{{ lookup('env', 'HOME') }}/{{ item.dest }}"
+        state: link
+        force: yes # Overwrite existing files or directories
+      loop:
+        - { src: "zsh/.zshrc", dest: ".zshrc" }
+        - {
+            src: "zsh/cyberpunk.zsh-theme",
+            dest: ".oh-my-zsh/themes/cyberpunk.zsh-theme",
+          }
+        - { src: "kitty/kitty.conf", dest: ".config/kitty/kitty.conf" }
+        - { src: "rofi/config.rasi", dest: ".config/rofi/config.rasi" }
+        - { src: "tmux/tmux.conf", dest: ".config/tmux/tmux.conf" }
+        - { src: "tmux/layouts", dest: ".tmux-layouts" }
+        - { src: "nvim", dest: ".config/nvim" }
+        - { src: "shell", dest: ".config/shell" }
+      when: "'dotfiles' in tools_to_install"
