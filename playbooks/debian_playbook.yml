@@ -250,7 +250,7 @@
 
     - name: Symlink dotfiles
       ansible.builtin.file:
-        src: "{{ playbook_dir }}/dotfiles/{{ item.src }}"
+        src: "{{ playbook_dir }}/../dotfiles/{{ item.src }}"
         dest: "{{ lookup('env', 'HOME') }}/{{ item.dest }}"
         state: link
         force: yes # Overwrite existing files or directories
