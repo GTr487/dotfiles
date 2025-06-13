@@ -1,5 +1,5 @@
 vim.g.mapleader = " "
--- vim.keymap.set("n", "<leader>pv", vim.cmd.Ex)
+vim.keymap.set("n", "<leader>pv", vim.cmd.Ex)
 
 -- Resize windows using leader + J/K/H/L
 vim.keymap.set("n", "<leader>K", "<cmd>resize +2<CR>", { noremap = true, silent = true })          -- Increase vertical size

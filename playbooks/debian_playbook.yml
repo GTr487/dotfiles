@@ -7,12 +7,12 @@
       - basics
       - asdf
       - zsh
-      - i3
+      #- i3
       - rofi
       - kitty
       - tmux
       - tmuxifier
-      - neovim
+      #- neovim
       - taskwarrior
       - dotfiles
 
@@ -124,6 +124,7 @@
           file:
             path: /tmp/keyring.deb
             state: absent
+      when: "'i3' in tools_to_install"
 
     - name: Install Rofi
       apt:
