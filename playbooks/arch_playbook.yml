@@ -33,6 +33,7 @@
           - kitty
           - tmux
           - neovim
+          - openssh
         state: present
       when: "'essentials' in tools_to_install"
 
