@@ -7,13 +7,12 @@
       - basics
       - asdf
       - zsh
-      #- i3
+      - i3
       - rofi
       - kitty
       - tmux
       - tmuxifier
-      #- neovim
-      - taskwarrior
+      - neovim
       - dotfiles
 
   tasks:
@@ -170,13 +169,6 @@
             path: /tmp/nvim-linux64.tar.gz
             state: absent
       when: "'neovim' in tools_to_install"
-
-    - name: Install Taskwarrior
-      apt:
-        name:
-          - taskwarrior
-        state: present
-      when: "'taskwarrior' in tools_to_install"
 
     - name: Install Docker
       block:

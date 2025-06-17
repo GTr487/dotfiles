@@ -16,16 +16,19 @@
         name:
           - xorg-server
           - xorg-xinit
+          - xorg-xrandr
           - bspwm
           - sxhkd
           - dunst
           - libnotify
           - xclip
           - firefox
+          - xdotool
           - ly
           - fzf
           - git
           - zsh
+          - polybar
           - rofi
           - kitty
           - tmux
@@ -44,16 +47,11 @@
           - ripgrep
           - python
           - python-pip
+#         - python-pyvim
           - tree
           - jq
           - at
         state: present
-      when: "'basics' in tools_to_install"
-
-    - name: Install PyVim
-      pip:
-        name: pyvim
-        executable: pip3
       when: "'basics' in tools_to_install"
 
     - name: Install ASDF
@@ -62,13 +60,6 @@
         dest: "{{ ansible_env.HOME }}/.asdf"
         version: "v0.11.3"
         clone: yes
-      when: "'asdf' in tools_to_install"
-
-    - name: Ensure ASDF is in PATH
-      lineinfile:
-        path: ~/.profile
-        line: 'export PATH="$HOME/.asdf/bin:$HOME/.asdf/shims:$PATH"'
-        state: present
       when: "'asdf' in tools_to_install"
 
     - name: Set Zsh as default shell
@@ -104,6 +95,13 @@
         update: no
       when: "'tmuxifier' in tools_to_install"
 
+    - name: Enable and start ly display manager
+      ansible.builtin.systemd:
+        name: ly
+        enabled: yes
+        state: started
+      when: "'essentials' in tools_to_install"
+
     - name: Ensure dotfile directories exist
       file:
         path: "{{ lookup('env', 'HOME') }}/{{ item.dest | dirname }}"
@@ -111,31 +109,41 @@
         mode: "0755"
       loop:
         - { dest: ".zshrc" }
+        - { dest: ".bashrc" }
+        - { dest: ".xinitrc" }
         - { dest: ".oh-my-zsh/themes/cyberpunk.zsh-theme" }
+        - { dest: ".config/sxhkd/sxhkdrc" }
         - { dest: ".config/kitty/kitty.conf" }
         - { dest: ".config/rofi/config.rasi" }
         - { dest: ".config/tmux/tmux.conf" }
         - { dest: ".tmux-layouts" }
+        - { dest: ".config/bspwm" }
+        - { dest: ".config/polybar" }
         - { dest: ".config/nvim" }
         - { dest: ".config/shell" }
       when: "'dotfiles' in tools_to_install"
 
     - name: Symlink dotfiles
       ansible.builtin.file:
-        src: "{{ playbook_dir }}/../dotfiles/{{ item.src }}"
+        src: "{{ ( playbook_dir + '/../dotfiles/' + item.src ) | realpath }}"
         dest: "{{ lookup('env', 'HOME') }}/{{ item.dest }}"
         state: link
         force: yes # Overwrite existing files or directories
       loop:
+        - { src: "bash/.bashrc", dest: ".bashrc" }
         - { src: "zsh/.zshrc", dest: ".zshrc" }
+        - { src: "xinit/.xinitrc", dest: ".xinitrc" }
         - {
             src: "zsh/cyberpunk.zsh-theme",
             dest: ".oh-my-zsh/themes/cyberpunk.zsh-theme",
           }
+        - { src: "sxhkd/sxhkdrc", dest: ".config/sxhkd/sxhkdrc" }
         - { src: "kitty/kitty.conf", dest: ".config/kitty/kitty.conf" }
         - { src: "rofi/config.rasi", dest: ".config/rofi/config.rasi" }
         - { src: "tmux/tmux.conf", dest: ".config/tmux/tmux.conf" }
         - { src: "tmux/layouts", dest: ".tmux-layouts" }
+        - { src: "bspwm", dest: ".config/bspwm" }
+        - { src: "polybar", dest: ".config/polybar" }
         - { src: "nvim", dest: ".config/nvim" }
         - { src: "shell", dest: ".config/shell" }
       when: "'dotfiles' in tools_to_install"
