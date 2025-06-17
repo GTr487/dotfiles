@@ -1,0 +1,92 @@
+alt + q
+  kitty
+
+alt + w
+  firefox --no-remote
+
+alt + shift + w
+  firefox --private-window
+
+alt + c
+  bspc node --close
+
+alt + d
+  rofi -show run
+
+alt + h
+  bspc node -f west
+alt + j
+  bspc node -f south
+alt + k
+  bspc node -f north
+alt + l
+  bspc node -f east
+
+alt + shift + h
+  bspc node -s west
+alt + shift + j
+  bspc node -s south
+alt + shift + k
+  bspc node -s north
+alt + shift + l
+  bspc node -s east
+
+alt + ctrl + h
+  bspc node -z width -10
+alt + ctrl + j
+  bspc node -z height 10
+alt + ctrl + k
+  bspc node -z height -10
+alt + ctrl + l
+  bspc node -z width 10
+
+alt + space
+  bspc node -t {floating, tiled}
+
+alt + f
+  bspc node -t {fullscreen, tiled}
+
+alt + 1
+  bspc desktop -f I
+alt + 2
+  bspc desktop -f II
+alt + 3
+  bspc desktop -f III
+alt + 4
+  bspc desktop -f IV
+alt + 5
+  bspc desktop -f V
+alt + 6
+  bspc desktop -f VI
+alt + 7
+  bspc desktop -f VII
+alt + 8
+  bspc desktop -f VIII
+alt + 9
+  bspc desktop -f IX
+alt + 0
+  bspc desktop -f X
+
+alt + shift + 1
+  bspc node -d I
+alt + shift + 2
+  bspc node -d II
+alt + shift + 3
+  bspc node -d III
+alt + shift + 4
+  bspc node -d IV
+alt + shift + 5
+  bspc node -d V
+alt + shift + 6
+  bspc node -d VI
+alt + shift + 7
+  bspc node -d VII
+alt + shift + 8
+  bspc node -d VIII
+alt + shift + 9
+  bspc node -d IX
+alt + shift + 0
+  bspc node -d X
+
+alt + shift + space
+  bspc wm -r

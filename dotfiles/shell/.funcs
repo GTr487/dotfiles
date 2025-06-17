@@ -1,0 +1,27 @@
+alias-fzf() {
+  local selected
+  selected=$(alias | fzf --prompt="Alias ▶ " --preview="echo {}" --preview-window=up:1 | awk -F '=' '{print $1}' | sed "s/alias //")
+
+  if [[ -n $selected ]]; then
+    # Insertar el alias en la línea actual usando zle en zsh
+    if [[ -n $ZSH_VERSION ]]; then
+      LBUFFER+="$selected "
+      zle reset-prompt
+    # O imprimir en bash para pegar con Ctrl+U por ejemplo
+    elif [[ -n $BASH_VERSION ]]; then
+      READLINE_LINE="$selected "
+      READLINE_POINT=${#READLINE_LINE}
+    fi
+  fi
+}
+
+# Para zsh: registrarla como widget interactivo
+if [[ -n $ZSH_VERSION ]]; then
+  zle -N alias-fzf
+  bindkey '^a' alias-fzf   # Ctrl-A abre el menú de alias
+fi
+
+# Para bash: usar bind con readline
+if [[ -n $BASH_VERSION ]]; then
+  bind -x '"\C-a":alias-fzf'  # Ctrl-A
+fi
