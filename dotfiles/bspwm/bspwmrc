@@ -1,17 +1,12 @@
 #!/bin/bash
 
-# Lanzar sxhkd (atajos de teclado)
-pgrep -x sxhkd > /dev/null || sxhkd &
-
-# Configuración de BSPWM
+# Configuración visual
 bspc config normal_border_color "#333333"
 bspc config focused_border_color "#5e0b0b"
 bspc config window_gap 1
 
-# Definir escritorios
+# Configurar escritorios solo cuando el monitor está disponible
 bspc monitor -d I II III IV V VI VII VIII IX X
 
-# Iniciar aplicaciones luego de que el entorno esté listo
-(sleep 1 && kitty) &
-# (sleep 1 && ~/.config/polybar/launch.sh) &
-
+# Aplicaciones opcionales
+# (sleep 1 && kitty) &
