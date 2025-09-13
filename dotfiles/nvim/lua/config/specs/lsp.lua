@@ -90,10 +90,12 @@ return {
         vim.keymap.set("n", "<F4>", "<cmd>lua vim.lsp.buf.code_action()<cr>", opts)
       end
 
+      local capabilities = require("cmp_nvim_lsp").default_capabilities()
+
       lsp_zero.extend_lspconfig({
         sign_text = true,
         lsp_attach = lsp_attach,
-        capabilities = require("cmp_nvim_lsp").default_capabilities(),
+        capabilities = capabilities,
       })
 
       require("mason-lspconfig").setup({
@@ -110,10 +112,15 @@ return {
           -- this first function is the "default handler"
           -- it applies to every language server without a "custom handler"
           function(server_name)
-            require("lspconfig")[server_name].setup({})
+            require("lspconfig")[server_name].setup({
+              on_attach = lsp_attach,
+              capabilities = capabilities,
+            })
           end,
           ts_ls = function()
             require("lspconfig").ts_ls.setup({
+              on_attach = lsp_attach,
+              capabilities = capabilities,
               init_options = {
                 preferences = {
                   disableSuggestions = true,
@@ -123,6 +130,15 @@ return {
           end,
         },
       })
+
+      vim.diagnostic.config({
+        virtual_text = true,
+        signs = true,
+        underline = true,
+        update_in_insert = false,
+        severity_sort = true,
+      })
+
     end,
   },
 }
