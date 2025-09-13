@@ -15,8 +15,8 @@ add_to_path "$HOME/.config/shell/scripts"
 
 # - OTHER ----
 export TERM=xterm-256color
-# . "$HOME/.asdf/asdf.sh"
-# . "$HOME/.asdf/completions/asdf.bash"
+. "$HOME/.asdf/asdf.sh"
+. "$HOME/.asdf/completions/asdf.bash"
 
 
 export TMUXIFIER_LAYOUT_PATH="$HOME/.tmux-layouts"

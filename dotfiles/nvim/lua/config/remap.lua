@@ -45,7 +45,7 @@ vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><
 -- Make the current file executable
 vim.keymap.set("n", "<leader>x", "<cmd>!chmod +x %<CR>", { silent = true })
 
--- Custom function
+-- Custom function: draft mode
 vim.keymap.set("n", "<leader>ed", function()
   require("custom.draft").open_draft_window()
 end)

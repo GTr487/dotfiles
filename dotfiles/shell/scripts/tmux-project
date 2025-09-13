@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+
+PROJECT_DIRS=(
+  "$HOME/dev"
+  )
+
+pick_project() {
+  local roots=("$@")
+  find "${roots[@]}" -maxdepth 1 -mindepth 1 -type d 2>/dev/null \
+    | fzf --prompt="Select project: "
+}
+
+open_session() {
+  local dir="$1"
+  [ -z "$dir" ] && exit 1
+
+  local session
+  session=$(basename "$dir")
+
+  if tmux has-session -t "$session" 2>/dev/null; then
+    if [ -n "$TMUX" ]; then
+      tmux switch-client -t "$session"
+    else
+      tmux attach -t "$session"
+    fi
+
+  else
+    tmux new-session -ds "$session" -c "$dir"
+    # tmux send-keys -t "$session" "nvim" C-m
+    if [ -n "$TMUX" ]; then
+      tmux switch-client -t "$session"
+    else
+      tmux attach -t "$session"
+    fi
+  fi
+}
+
+if [ "$1" = "-fzf" ]; then
+  shift
+  roots=("$@")
+  if [ ${#roots[@]} -eq 0 ]; then
+    roots=("${PROJECT_DIRS[@]}")
+  fi
+  project=$(pick_project "${roots[@]}")
+  [ -n "$project" ] && open_session "$project"
+
+else
+  if [ "$1" = "." ]; then
+    open_session "$(pwd)"
+    exit 0
+  fi
+
+  if [ -n "$1" ] && [ -d "$1" ]; then
+    open_session "$1"
+    exit 0
+  fi
+
+  project=$(pick_project "${PROJECT_DIRS[@]}")
+  [ -n "$project" ] && open_session "$project"
+fi
