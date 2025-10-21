@@ -12,6 +12,7 @@ add_to_path "$HOME/.tmuxifier/bin"
 add_to_path "$HOME/.asdf/bin"
 add_to_path "$HOME/.asdf/shims"
 add_to_path "$HOME/.config/shell/scripts"
+add_to_path "$HOME/go/bin"
 
 # - OTHER ----
 export TERM=xterm-256color

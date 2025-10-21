@@ -4,10 +4,24 @@ PROJECT_DIRS=(
   "$HOME/dev"
   )
 
+STATUS_COMMAND="status-project"
+
 pick_project() {
   local roots=("$@")
-  find "${roots[@]}" -maxdepth 1 -mindepth 1 -type d 2>/dev/null \
-    | fzf --prompt="Select project: "
+
+  if command -v "$STATUS_COMMAND" &>/dev/null; then
+    # Use status script as preview
+    find "${roots[@]}" -maxdepth 1 -mindepth 1 -type d 2>/dev/null \
+      | fzf --prompt="Select project: " \
+            --preview="$STATUS_COMMAND --path={}" \
+            --preview-window=right:60%:wrap
+  else
+    # Fallback: simple directory listing preview
+    find "${roots[@]}" -maxdepth 1 -mindepth 1 -type d 2>/dev/null \
+      | fzf --prompt="Select project: " \
+            --preview="ls -la {}" \
+            --preview-window=right:60%:wrap
+  fi
 }
 
 open_session() {
@@ -26,6 +40,15 @@ open_session() {
 
   else
     tmux new-session -ds "$session" -c "$dir"
+    
+    # Check if status command is available in PATH
+    if command -v "$STATUS_COMMAND" &>/dev/null; then
+      # Verify it's a git repository before showing status
+      if git -C "$dir" rev-parse --git-dir >/dev/null 2>&1; then
+        tmux send-keys -t "$session" "$STATUS_COMMAND" C-m
+      fi
+    fi
+
     # tmux send-keys -t "$session" "nvim" C-m
     if [ -n "$TMUX" ]; then
       tmux switch-client -t "$session"
