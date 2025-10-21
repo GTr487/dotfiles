@@ -1,0 +1,292 @@
+#!/usr/bin/env bash
+# Git Project Summary - Shows detailed information about the current repository
+# Dependencies: git, jq, tokei, du, stat, awk, sed, sort
+
+set -uo pipefail
+
+# ───────────────────────────────────────────
+#   Parse arguments
+# ───────────────────────────────────────────
+DEBUG=false
+TARGET_PATH="."
+
+# Debug function
+debug() {
+  if [[ "$DEBUG" == true ]]; then
+    echo "[DEBUG] $*"
+  fi
+}
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --debug)
+      DEBUG=true
+      shift
+      ;;
+    --path=*)
+      TARGET_PATH="${1#*=}"
+      shift
+      ;;
+    --path)
+      if [[ -n "${2:-}" ]]; then
+        TARGET_PATH="$2"
+        shift 2
+      else
+        echo "ERROR: --path requires a directory path"
+        exit 1
+      fi
+      ;;
+    -h|--help)
+      echo "Usage: $0 [OPTIONS]"
+      echo ""
+      echo "Options:"
+      echo "  --debug         Show detailed execution information"
+      echo "  --path=DIR      Specify repository path (default: current directory)"
+      echo "  --path DIR      Alternative syntax for --path"
+      echo "  -h, --help      Show this help message"
+      echo ""
+      echo "Examples:"
+      echo "  $0                           # Analyze current directory"
+      echo "  $0 --path=/home/user/myrepo  # Analyze specific repository"
+      echo "  $0 --path ~/projects/app     # Using alternative syntax"
+      echo "  $0 --debug --path=~/dotfiles # With debug enabled"
+      echo ""
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $1"
+      echo "Use --help for usage information"
+      exit 1
+      ;;
+  esac
+done
+
+# Validate and change to target directory
+if [[ ! -d "$TARGET_PATH" ]]; then
+  echo ""
+  echo "ERROR: Directory does not exist: $TARGET_PATH"
+  echo ""
+  exit 1
+fi
+
+# Expand ~ and resolve to absolute path
+TARGET_PATH=$(cd "$TARGET_PATH" && pwd)
+debug "Target path: $TARGET_PATH"
+
+# Change to target directory
+cd "$TARGET_PATH" || {
+  echo ""
+  echo "ERROR: Cannot access directory: $TARGET_PATH"
+  echo ""
+  exit 1
+}
+
+# ───────────────────────────────────────────
+#   Validate dependencies
+# ───────────────────────────────────────────
+debug "Checking dependencies..."
+
+REQUIRED_CMDS=(git jq tokei du stat awk sed sort)
+MISSING_CMDS=()
+
+for cmd in "${REQUIRED_CMDS[@]}"; do
+  if ! command -v "$cmd" &>/dev/null; then
+    MISSING_CMDS+=("$cmd")
+    debug "  Missing: $cmd"
+  else
+    debug "  Found: $cmd"
+  fi
+done
+
+if [ "${#MISSING_CMDS[@]}" -gt 0 ]; then
+  echo ""
+  echo "ERROR: Missing required tools:"
+  printf '   - %s\n' "${MISSING_CMDS[@]}"
+  echo ""
+  echo "Install them with: sudo apt install ${MISSING_CMDS[*]}"
+  echo ""
+  exit 1
+fi
+
+debug "All dependencies installed"
+
+# ───────────────────────────────────────────
+#   Verify Git repository
+# ───────────────────────────────────────────
+debug "Checking Git repository..."
+
+# Force output even if redirected
+GIT_CHECK_RESULT=0
+git rev-parse --git-dir >/dev/null 2>&1 || GIT_CHECK_RESULT=$?
+
+if [ $GIT_CHECK_RESULT -ne 0 ]; then
+  # Print to both stdout and stderr to ensure visibility
+  {
+    echo ""
+    echo "ERROR: Not in a Git repository"
+    echo ""
+    echo "Current directory: $(pwd)"
+    echo ""
+    echo "To use this script:"
+    echo "   1. Navigate to a Git repository: cd /path/to/repo"
+    echo "   2. Or initialize a new one: git init"
+    echo ""
+  } | tee /dev/stderr
+  exit 1
+fi
+
+debug "Git repository detected"
+
+# Get repository root for relative path operations
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+debug "Repository root: $REPO_ROOT"
+
+# ───────────────────────────────────────────
+#   Gather information
+# ───────────────────────────────────────────
+
+debug "Collecting project information..."
+
+# Project name
+P_BASENAME=$(basename "$REPO_ROOT" 2>/dev/null || echo "N/A")
+debug "  Project: $P_BASENAME"
+
+# Current branch
+P_CURRENT_BRANCH=$(git symbolic-ref --short -q HEAD 2>/dev/null || git rev-parse --short HEAD 2>/dev/null || echo "detached")
+debug "  Branch: $P_CURRENT_BRANCH"
+
+# Differences with upstream
+if git rev-parse --abbrev-ref --symbolic-full-name "@{u}" >/dev/null 2>&1; then
+  UPSTREAM=$(git rev-parse --abbrev-ref --symbolic-full-name "@{u}" 2>/dev/null || echo "")
+  if [[ -n "$UPSTREAM" ]]; then
+    BEHIND_AHEAD=$(git rev-list --left-right --count "$UPSTREAM"...HEAD 2>/dev/null || echo "0 0")
+    BEHIND=$(echo "$BEHIND_AHEAD" | awk '{print $1}')
+    AHEAD=$(echo "$BEHIND_AHEAD" | awk '{print $2}')
+    P_AHEAD_BEHIND="↓${BEHIND} ↑${AHEAD}"
+  else
+    P_AHEAD_BEHIND="no upstream"
+  fi
+else
+  P_AHEAD_BEHIND="no upstream"
+fi
+debug "  Upstream status: $P_AHEAD_BEHIND"
+
+# Last local modification (fixed to use repo root)
+P_LAST_LOCAL_UPDATE="No local changes"
+STATUS_OUTPUT=$(git status --porcelain 2>/dev/null || echo "")
+if [[ -n "$STATUS_OUTPUT" ]]; then
+  debug "  Found modified files, checking timestamps..."
+  LATEST_MTIME=$(echo "$STATUS_OUTPUT" | awk '{print substr($0,4)}' | while read -r f; do
+    FULL_PATH="$REPO_ROOT/$f"
+    if [ -f "$FULL_PATH" ]; then
+      stat -c %Y "$FULL_PATH" 2>/dev/null || true
+    fi
+  done | sort -rn | head -1)
+  
+  if [[ -n "$LATEST_MTIME" ]]; then
+    P_LAST_LOCAL_UPDATE=$(date -d "@${LATEST_MTIME}" '+%Y-%m-%d %H:%M:%S' 2>/dev/null || echo "N/A")
+    debug "  Latest modification timestamp: $LATEST_MTIME -> $P_LAST_LOCAL_UPDATE"
+  fi
+fi
+debug "  Last modification: $P_LAST_LOCAL_UPDATE"
+
+# Git status - summarized
+P_GIT_STATUS=$(git status --short 2>/dev/null || echo "")
+if [[ -n "$P_GIT_STATUS" ]]; then
+  # Count different types of changes (use grep with proper fallback)
+  MODIFIED=$(echo "$P_GIT_STATUS" | grep '^ M' | wc -l)
+  ADDED=$(echo "$P_GIT_STATUS" | grep '^A' | wc -l)
+  DELETED=$(echo "$P_GIT_STATUS" | grep '^ D' | wc -l)
+  RENAMED=$(echo "$P_GIT_STATUS" | grep '^R' | wc -l)
+  UNTRACKED=$(echo "$P_GIT_STATUS" | grep '^??' | wc -l)
+  STAGED_MODIFIED=$(echo "$P_GIT_STATUS" | grep '^M' | wc -l)
+  STAGED_DELETED=$(echo "$P_GIT_STATUS" | grep '^D' | wc -l)
+  
+  # Trim whitespace from counts
+  MODIFIED=$(echo "$MODIFIED" | tr -d ' ')
+  ADDED=$(echo "$ADDED" | tr -d ' ')
+  DELETED=$(echo "$DELETED" | tr -d ' ')
+  RENAMED=$(echo "$RENAMED" | tr -d ' ')
+  UNTRACKED=$(echo "$UNTRACKED" | tr -d ' ')
+  STAGED_MODIFIED=$(echo "$STAGED_MODIFIED" | tr -d ' ')
+  STAGED_DELETED=$(echo "$STAGED_DELETED" | tr -d ' ')
+  
+  debug "  Changes: M=$MODIFIED A=$ADDED D=$DELETED R=$RENAMED ??=$UNTRACKED SM=$STAGED_MODIFIED SD=$STAGED_DELETED"
+fi
+
+# Last commit
+P_LAST_COMMIT=$(git log -1 --pretty=format:'%h - %s (%ad)' --date=short 2>/dev/null || echo "No commits yet")
+debug "  Last commit: $P_LAST_COMMIT"
+
+# Stashes (fixed to show unique stashes with time)
+P_STASH_COUNT=$(git stash list 2>/dev/null | wc -l || echo "0")
+if [[ "$P_STASH_COUNT" -gt 0 ]]; then
+  # Use --date=relative and full date format to differentiate stashes
+  P_STASH_LIST=$(git stash list --pretty=format:'%gd: %s (%cr)' 2>/dev/null | head -n 3 || echo "")
+else
+  P_STASH_LIST=""
+fi
+debug "  Stashes: $P_STASH_COUNT"
+
+# Size
+P_SIZE=$(du -sh . 2>/dev/null | cut -f1 || echo "N/A")
+debug "  Size: $P_SIZE"
+
+# Primary language
+debug "Analyzing languages with tokei..."
+P_LANG=$(tokei --output json . 2>/dev/null | jq -r '
+  del(.Total)
+  | to_entries
+  | map({lang: .key, code: .value.code})
+  | select(length > 0)
+  | (map(.code) | add) as $total
+  | max_by(.code) as $main
+  | if $main then "\($main.lang) (\(($main.code / $total * 100 * 10 | round) / 10)%)" else "N/A" end
+' 2>/dev/null || echo "N/A")
+debug "  Primary language: $P_LANG"
+
+# ───────────────────────────────────────────
+#   Output formatting
+# ───────────────────────────────────────────
+debug "Generating output..."
+
+SEP="-------------------------------------------"
+
+clear
+printf "%s\n" "$SEP"
+printf "  %s\n" "$P_BASENAME"
+printf "%s\n" "$SEP"
+
+printf "Branch:    [%s] %s\n" "$P_AHEAD_BEHIND" "$P_CURRENT_BRANCH"
+printf "Modified:  %s\n" "$P_LAST_LOCAL_UPDATE"
+
+if [[ -n "$P_GIT_STATUS" ]]; then
+  printf "\nChanges:\n"
+  
+  # Print each type of change on its own line (right-aligned numbers)
+  [[ $STAGED_MODIFIED -gt 0 ]] && printf "   %3s staged\n" "$STAGED_MODIFIED"
+  [[ $MODIFIED -gt 0 ]] && printf "   %3s modified\n" "$MODIFIED"
+  [[ $ADDED -gt 0 ]] && printf "   %3s added\n" "$ADDED"
+  [[ $DELETED -gt 0 ]] && printf "   %3s deleted\n" "$DELETED"
+  [[ $STAGED_DELETED -gt 0 ]] && printf "   %3s staged for deletion\n" "$STAGED_DELETED"
+  [[ $RENAMED -gt 0 ]] && printf "   %3s renamed\n" "$RENAMED"
+  [[ $UNTRACKED -gt 0 ]] && printf "   %3s untracked\n" "$UNTRACKED"
+  
+  echo ""
+else
+  printf "\n"
+fi
+
+printf "Last commit:\n   %s\n" "$P_LAST_COMMIT"
+
+if [[ -n "$P_STASH_LIST" ]]; then
+  echo ""
+  printf "Stashes (%s):\n" "$P_STASH_COUNT"
+  echo "$P_STASH_LIST" | sed 's/^/   /'
+fi
+
+printf "\n%s\n" "$SEP"
+printf "  Size: %s  |  Lang: %s\n" "$P_SIZE" "$P_LANG"
+printf "%s\n" "$SEP"
+
+debug "Script completed successfully"

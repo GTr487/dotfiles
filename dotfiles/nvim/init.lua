@@ -1,1 +1,9 @@
-require("config")
+-- init.lua
+-- - Entry point
+
+require("config.options")
+require("config.keymaps")
+require("config.autocmds")
+
+require("core.lazy")
+require("core.lsp")

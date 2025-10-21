@@ -33,6 +33,7 @@
           - kitty
           - tmux
           - neovim
+          - tokei
           - openssh
         state: present
       when: "'essentials' in tools_to_install"
@@ -116,7 +117,7 @@
         - { dest: ".config/sxhkd/sxhkdrc" }
         - { dest: ".config/kitty/kitty.conf" }
         - { dest: ".config/rofi/config.rasi" }
-        - { dest: ".config/tmux/tmux.conf" }
+        - { dest: ".tmux.conf" }
         - { dest: ".tmux-layouts" }
         - { dest: ".config/bspwm" }
         - { dest: ".config/polybar" }
@@ -141,7 +142,7 @@
         - { src: "sxhkd/sxhkdrc", dest: ".config/sxhkd/sxhkdrc" }
         - { src: "kitty/kitty.conf", dest: ".config/kitty/kitty.conf" }
         - { src: "rofi/config.rasi", dest: ".config/rofi/config.rasi" }
-        - { src: "tmux/tmux.conf", dest: ".config/tmux/tmux.conf" }
+        - { src: "tmux/tmux.conf", dest: ".tmux.conf" }
         - { src: "tmux/layouts", dest: ".tmux-layouts" }
         - { src: "bspwm", dest: ".config/bspwm" }
         - { src: "polybar", dest: ".config/polybar" }
